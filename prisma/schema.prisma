@@ -1,0 +1,171 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../generated/prisma"
+}
+
+datasource db {
+  provider = "mysql"
+}
+
+model User {
+  id        String    @id @default(uuid())
+  username  String    @unique(map: "User_username_key")
+  fullname  String
+  email     String
+  password  String
+
+  roles     UserRole[]
+  schedulesCreated Schedule[] @relation("ScheduleCreatedBy")
+  schedulesUpdated Schedule[] @relation("ScheduleUpdatedBy")
+  schedulesDeleted Schedule[] @relation("ScheduleDeletedBy")
+  
+  participants ScheduleParticipant[]
+  notifications Notification[]
+
+  isActive  Boolean   @default(true)
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @default(now())
+  deletedAt DateTime?
+}
+
+model Role {
+  id          String   @id @default(uuid())
+  name        String   @unique
+  description String?
+
+  users       UserRole[]
+  permissions RolePermission[]
+}
+
+model UserRole {
+  id     String @id @default(uuid())
+  userId String
+  roleId String
+
+  user   User @relation(fields: [userId], references: [id])
+  role   Role @relation(fields: [roleId], references: [id])
+
+  @@unique([userId, roleId])
+}
+
+model Permission {
+  id   String @id @default(uuid())
+  code String @unique
+  name String
+
+  roles RolePermission[]
+}
+
+model RolePermission {
+  id           String @id @default(uuid())
+  roleId       String
+  permissionId String
+
+  role         Role       @relation(fields: [roleId], references: [id])
+  permission   Permission @relation(fields: [permissionId], references: [id])
+
+  @@unique([roleId, permissionId])
+}
+
+
+enum ScheduleStatus {
+  SCHEDULED
+  DONE
+  CANCELLED
+}
+
+enum ScheduleType {
+  MEETING
+  TASK
+  REMINDER
+  EVENT
+}
+
+
+model Schedule {
+  id            String    @id @default(uuid())
+  title         String
+  description   String?
+  
+  startAt       DateTime
+  endAt         DateTime
+  timezone      String   @default("Asia/Jakarta")
+
+  status        ScheduleStatus @default(SCHEDULED)
+  type          ScheduleType
+
+  location    String?
+  isOnline    Boolean @default(true)
+  meetingUrl  String?
+
+  reminderAt    DateTime?
+  isPublic      Boolean @default(false)
+
+  participants ScheduleParticipant[]
+
+  notifications Notification[]
+
+  createdById   String
+  updatedById   String
+  deletedById   String?
+
+  createdBy     User      @relation("ScheduleCreatedBy", fields: [createdById], references: [id])
+  updatedBy     User      @relation("ScheduleUpdatedBy", fields: [updatedById], references: [id])
+  deletedBy     User?     @relation("ScheduleDeletedBy", fields: [deletedById], references: [id])
+
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @default(now())
+  deletedAt     DateTime?
+}
+
+enum ParticipantRole {
+  HOST
+  ATTENDEE
+}
+
+enum ParticipantStatus {
+  PENDING
+  ACCEPTED
+  REJECTED
+}
+
+model ScheduleParticipant {
+  id          String   @id @default(uuid())
+  scheduleId  String
+  userId      String
+
+  role        ParticipantRole @default(ATTENDEE)
+  status      ParticipantStatus @default(PENDING)
+
+  schedule    Schedule @relation(fields: [scheduleId], references: [id])
+  user        User     @relation(fields: [userId], references: [id])
+
+  joinedAt    DateTime?
+}
+
+enum NotificationType {
+  REMINDER
+  INVITATION
+  UPDATE
+  CANCELLATION
+}
+
+model Notification {
+  id          String   @id @default(uuid())
+  userId      String
+  scheduleId  String?
+
+  title       String
+  message     String
+
+  type        NotificationType
+  isRead      Boolean @default(false)
+
+  sendAt      DateTime
+  sentAt      DateTime?
+
+  user        User     @relation(fields: [userId], references: [id])
+  schedule    Schedule? @relation(fields: [scheduleId], references: [id])
+
+  createdAt   DateTime @default(now())
+}
