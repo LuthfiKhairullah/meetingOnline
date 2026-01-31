@@ -1,9 +1,9 @@
 export const runtime = "nodejs";
 
 import bcrypt from "bcryptjs";
-import { prisma } from "@/lib/prisma";
 import { signJwt } from "@/lib/jwt";
 import { authUserResponse, errorResponse, successLoginResponse, successResponse } from "@/lib/response";
+import prisma from "@/lib/prisma";
 
 export async function POST(req: Request) {
   const { username, password } = await req.json();

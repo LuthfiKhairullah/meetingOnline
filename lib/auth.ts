@@ -1,6 +1,6 @@
 export const runtime = "nodejs";
 
-import { prisma } from "@/lib/prisma";
+import prisma from "@/lib/prisma";
 
 export async function getUserAccess(userId: string) {
   const roles = await prisma.userRole.findMany({

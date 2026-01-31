@@ -1,7 +1,7 @@
 export const runtime = "nodejs";
 import bcrypt from "bcryptjs";
-import { prisma } from "@/lib/prisma";
 import { successResponse, errorResponse, authUserResponse } from "@/lib/response";
+import prisma from "@/lib/prisma";
 
 export async function POST(req: Request) {
   try {
