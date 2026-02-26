@@ -41,9 +41,6 @@ yarn-error.log*
 next-env.d.ts
 
 /lib/generated/prisma
-/lib/auth/crypto.ts
-/lib/auth/mailer.ts
-/lib/auth/otp.ts
 /app/api/notificationType
 /app/api/typeUsers
 /app/api/userActivation
