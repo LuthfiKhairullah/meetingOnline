@@ -2,10 +2,10 @@ import { requirePermission } from "@/lib/auth/requirePermission";
 import { requireRole } from "@/lib/auth/requireRole";
 import prisma from "@/lib/prisma";
 import { errorResponse, successResponse } from "@/lib/response";
-import { NextResponse } from "next/server";
 
 export async function POST(req: Request) {
   const userId = req.headers.get("x-user-id")!;
+
   const types: string[] = JSON.parse(
     req.headers.get("x-user-type") || "[]"
   );
@@ -17,37 +17,21 @@ export async function POST(req: Request) {
     req.headers.get("x-user-permissions") || "[]"
   );
 
-  requirePermission(permissions, ["schedule.store"]);
+  requirePermission(permissions, ["notifications.store"]);
 
   const body = await req.json();
 
-  const overlap = await prisma.schedule.findFirst({
-    where: {
-      startAt: { lt: new Date(body.endAt) },
-      endAt: { gt: new Date(body.startAt) },
-      deletedAt: null,
-    },
-  });
-
-  if (overlap) {
-      return errorResponse("Schedule overlap", 409);
-  }
-
-  const schedule = await prisma.schedule.create({
+  const notification = await prisma.notification.create({
     data: {
+      userId: userId,
       title: body.title,
-      description: body.description,
-      startAt: new Date(body.startAt),
-      endAt: new Date(body.endAt),
-      location: body.location,
-      scheduleTypeId: body.type,
-      scheduleStatusId: body.status,
-      createdById: userId,
-      updatedById: userId,
+      notificationTypeId: body.type,
+      message: body.message,
+      sendAt: body.sendAt,
     },
   });
 
-  return successResponse("Data created successfully", schedule, 200);
+  return successResponse("Data created successfully", notification, 200);
 }
 
 export async function GET(req: Request) {
@@ -63,16 +47,16 @@ export async function GET(req: Request) {
       req.headers.get("x-user-permissions") || "[]"
     );
 
-    requirePermission(permissions, ["schedule.index"]);
+    requirePermission(permissions, ["notifications.index"]);
 
-    const schedules = await prisma.schedule.findMany({
-      where: { deletedAt: null },
+    const notifications = await prisma.notification.findMany({
       include: {
-        participants: { include: { user: true } },
+        schedule: true,
+        user: true,
       },
     });
 
-    return successResponse("Data loaded successfully", schedules, 200);
+    return successResponse("Data loaded successfully", notifications, 200);
   } catch (error: any) {
     return errorResponse(error.message, 409);
   }

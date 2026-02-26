@@ -52,10 +52,11 @@ export function errorResponse(
   );
 }
 
-export function authUserResponse(user: any) {
+export function authUserResponse(publicId: string, refreshToken: string, token: string, user: any) {
   return {
-    fullname: user.fullname,
-    username: user.username,
-    email: user.email,
+    ...user,
+    token,
+    refreshToken,
+    publicId,
   };
 }

@@ -2,10 +2,8 @@ import { requirePermission } from "@/lib/auth/requirePermission";
 import { requireRole } from "@/lib/auth/requireRole";
 import prisma from "@/lib/prisma";
 import { errorResponse, successResponse } from "@/lib/response";
-import { NextResponse } from "next/server";
 
 export async function POST(req: Request) {
-  const userId = req.headers.get("x-user-id")!;
   const types: string[] = JSON.parse(
     req.headers.get("x-user-type") || "[]"
   );
@@ -17,37 +15,18 @@ export async function POST(req: Request) {
     req.headers.get("x-user-permissions") || "[]"
   );
 
-  requirePermission(permissions, ["schedule.store"]);
+  requirePermission(permissions, ["roles.store"]);
 
   const body = await req.json();
 
-  const overlap = await prisma.schedule.findFirst({
-    where: {
-      startAt: { lt: new Date(body.endAt) },
-      endAt: { gt: new Date(body.startAt) },
-      deletedAt: null,
-    },
-  });
-
-  if (overlap) {
-      return errorResponse("Schedule overlap", 409);
-  }
-
-  const schedule = await prisma.schedule.create({
+  const role = await prisma.role.create({
     data: {
-      title: body.title,
+      name: body.name,
       description: body.description,
-      startAt: new Date(body.startAt),
-      endAt: new Date(body.endAt),
-      location: body.location,
-      scheduleTypeId: body.type,
-      scheduleStatusId: body.status,
-      createdById: userId,
-      updatedById: userId,
     },
   });
 
-  return successResponse("Data created successfully", schedule, 200);
+  return successResponse("Data created successfully", role, 200);
 }
 
 export async function GET(req: Request) {
@@ -63,16 +42,11 @@ export async function GET(req: Request) {
       req.headers.get("x-user-permissions") || "[]"
     );
 
-    requirePermission(permissions, ["schedule.index"]);
+    requirePermission(permissions, ["roles.index"]);
 
-    const schedules = await prisma.schedule.findMany({
-      where: { deletedAt: null },
-      include: {
-        participants: { include: { user: true } },
-      },
-    });
+    const roles = await prisma.role.findMany();
 
-    return successResponse("Data loaded successfully", schedules, 200);
+    return successResponse("Data loaded successfully", roles, 200);
   } catch (error: any) {
     return errorResponse(error.message, 409);
   }

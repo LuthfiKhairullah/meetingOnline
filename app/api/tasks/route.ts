@@ -17,37 +17,24 @@ export async function POST(req: Request) {
     req.headers.get("x-user-permissions") || "[]"
   );
 
-  requirePermission(permissions, ["schedule.store"]);
+  requirePermission(permissions, ["task.store"]);
 
   const body = await req.json();
 
-  const overlap = await prisma.schedule.findFirst({
-    where: {
-      startAt: { lt: new Date(body.endAt) },
-      endAt: { gt: new Date(body.startAt) },
-      deletedAt: null,
-    },
-  });
-
-  if (overlap) {
-      return errorResponse("Schedule overlap", 409);
-  }
-
-  const schedule = await prisma.schedule.create({
+  const task = await prisma.task.create({
     data: {
       title: body.title,
       description: body.description,
       startAt: new Date(body.startAt),
       endAt: new Date(body.endAt),
-      location: body.location,
-      scheduleTypeId: body.type,
       scheduleStatusId: body.status,
+      scheduleTypeId: body.type,
       createdById: userId,
       updatedById: userId,
     },
   });
 
-  return successResponse("Data created successfully", schedule, 200);
+  return successResponse("Data created successfully", task, 200);
 }
 
 export async function GET(req: Request) {
@@ -63,16 +50,16 @@ export async function GET(req: Request) {
       req.headers.get("x-user-permissions") || "[]"
     );
 
-    requirePermission(permissions, ["schedule.index"]);
+    requirePermission(permissions, ["task.index"]);
 
-    const schedules = await prisma.schedule.findMany({
+    const tasks = await prisma.task.findMany({
       where: { deletedAt: null },
       include: {
         participants: { include: { user: true } },
       },
     });
 
-    return successResponse("Data loaded successfully", schedules, 200);
+    return successResponse("Data loaded successfully", tasks, 200);
   } catch (error: any) {
     return errorResponse(error.message, 409);
   }

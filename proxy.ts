@@ -10,7 +10,10 @@ export async function proxy(req: NextRequest) {
   // ✅ PUBLIC ROUTES
   if (
     pathname.startsWith("/api/auth/login") ||
-    pathname.startsWith("/api/auth/register")
+    pathname.startsWith("/api/auth/register") ||
+    pathname.startsWith("/api/auth/verify-email") ||
+    pathname.startsWith("/api/auth/refresh") ||
+    pathname.startsWith("/api/notificationType")
   ) {
     return NextResponse.next();
   }
@@ -26,16 +29,24 @@ export async function proxy(req: NextRequest) {
   }
 
   try {
-    const { userId } = verifyJwt(token);
+    const { id, username } = verifyJwt(token);
+    console.log(id);
+    console.log(username);
 
-    const access = await getUserAccess(userId);
+    const access = await getUserAccess(id);
 
     const headers = new Headers(req.headers);
-    headers.set("x-user-id", userId);
+    headers.set("x-user-id", id);
     headers.set("x-user-roles", JSON.stringify(access.roles));
     headers.set("x-user-permissions", JSON.stringify(access.permissions));
-
-    return successResponse("Login successful", { request: { headers } }, 200);
+    headers.set("x-user-type", JSON.stringify(access.userTypes));
+    console.log(headers);
+    
+    return NextResponse.next({
+      request: {
+        headers,
+      },
+    });
   } catch {
     return errorResponse("Invalid token", 401);
   }

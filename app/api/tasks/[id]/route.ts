@@ -2,10 +2,10 @@ import { Prisma } from "@/generated/prisma/client";
 import { requirePermission } from "@/lib/auth/requirePermission";
 import prisma from "@/lib/prisma";
 import { errorResponse, successResponse } from "@/lib/response";
+import { NextResponse } from "next/server";
 
 export async function PUT(req: Request, { params }: any) {
   const body = await req.json();
-  const userId = req.headers.get("x-user-id")!;
   const types: string[] = JSON.parse(
     req.headers.get("x-user-type") || "[]"
   );
@@ -15,32 +15,29 @@ export async function PUT(req: Request, { params }: any) {
 
   const permissions: string[] = JSON.parse(
     req.headers.get("x-user-permissions") || "[]"
-  )
+  );
 
-
-  requirePermission(permissions, ["schedule.update"]);
+  requirePermission(permissions, ["task.update"]);
 
   try {
-    const schedule = await prisma.schedule.update({
+    const task = await prisma.task.update({
       where: { id: params.id },
       data: {
         title: body.title,
         description: body.description,
-        startAt: new Date(body.startAt),
-        endAt: new Date(body.endAt),
-        location: body.location,
-        scheduleTypeId: body.type,
+        startAt: body.startAt,
+        endAt: body.endAt,
         scheduleStatusId: body.status,
-        updatedById: userId,
+        scheduleTypeId: body.type,
       },
     });
 
-    return successResponse("Data updated successfully", schedule, 200);
+    return successResponse("Data updated successfully", task, 200);
   } catch (error) {
     if (error instanceof Prisma.PrismaClientKnownRequestError) {
       switch (error.code) {
         case "P2025":
-          return errorResponse("Schedule not found", 404);
+          return errorResponse("Task not found", 404);
         default:
           return errorResponse(error.message, 400);
       }
@@ -63,11 +60,10 @@ export async function DELETE(req: Request, { params }: any) {
     req.headers.get("x-user-permissions") || "[]"
   );
 
-  requirePermission(permissions, ["schedule.delete"]);
-
+  requirePermission(permissions, ["task.delete"]);
 
   try {
-    await prisma.schedule.update({
+    await prisma.task.update({
       where: { id: params.id },
       data: {
         deletedAt: new Date(),
@@ -80,7 +76,7 @@ export async function DELETE(req: Request, { params }: any) {
     if (error instanceof Prisma.PrismaClientKnownRequestError) {
       switch (error.code) {
         case "P2025":
-          return errorResponse("Schedule not found", 404);
+          return errorResponse("Task not found", 404);
         default:
           return errorResponse(error.message, 400);
       }

@@ -37,26 +37,21 @@ export async function POST(req: Request) {
 
     const otp = generateToken();
     const otpEnc = encryption(otp);
-    const otpHash = hashText(otp);
     const expiry = new Date(Date.now() + 5 * 60 * 1000); // 5 menit
     
     const emailEnc = encryption(email);
     
     const hashedPassword = await bcrypt.hash(password, 10);
 
-    const verifyLink = `${process.env.NEXT_PUBLIC_APP_URL}/verify-email?token=${otpEnc}`;
-
     await transporter.sendMail({
+      from: `"System" <${process.env.EMAIL_USER}>`,
       to: email,
-      subject: "Verify Your Email",
+      subject: "Kode OTP Anda",
       html: `
-        <h2>Email Verification</h2>
-        <p>Klik tombol di bawah untuk verifikasi:</p>
-        <a href="${verifyLink}" 
-          style="padding:10px 20px;background:#2563eb;color:white;text-decoration:none;border-radius:6px;">
-          Verify Email
-        </a>
-        <p>Link berlaku 5 menit.</p>
+        <h2>OTP Verification</h2>
+        <p>Kode OTP Anda:</p>
+        <h1>${otp}</h1>
+        <p>Berlaku selama 5 menit.</p>
       `,
     });
 
@@ -68,12 +63,12 @@ export async function POST(req: Request) {
         emailHash: emailHash,
         password: hashedPassword,
         userActivationId: 1,
-        otp: otpHash,
+        otp: otpEnc,
         otpExpired: expiry,
       },
     });
     
-    return successResponse("Registrasi berhasil, verifikasi email anda", null, 201);
+    return successResponse("Registrasi berhasil, kode OTP terkirim ke email anda", null, 201);
   } catch (error) {
     console.error(error);
     return errorResponse("Terjadi kesalahan server", 500);

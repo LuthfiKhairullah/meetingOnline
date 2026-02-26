@@ -8,24 +8,93 @@ datasource db {
 }
 
 model User {
-  id        String    @id @default(uuid())
-  username  String    @unique(map: "User_username_key")
-  fullname  String
-  email     String
-  password  String
+  id            String    @id @default(uuid())
+  username      String    @unique(map: "User_username_key")
+  fullname      String
+  email         String
+  emailHash     String
+  password      String
+  nik           String?   @db.VarChar(6)
+  alamat        String?    @db.Text
+  noHp          String?
+  phoneHash     String?
+  otp           String?
+  otpExpired    DateTime?
 
   roles     UserRole[]
+  
   schedulesCreated Schedule[] @relation("ScheduleCreatedBy")
   schedulesUpdated Schedule[] @relation("ScheduleUpdatedBy")
   schedulesDeleted Schedule[] @relation("ScheduleDeletedBy")
   
-  participants ScheduleParticipant[]
-  notifications Notification[]
+  murajaahEventsCreated MurajaahEvent[] @relation("MurajaahEventCreatedBy")
+  murajaahEventsUpdated MurajaahEvent[] @relation("MurajaahEventUpdatedBy")
+  murajaahEventsDeleted MurajaahEvent[] @relation("MurajaahEventDeletedBy")
 
-  isActive  Boolean   @default(true)
+  tasksCreated Task[] @relation("TaskCreatedBy")
+  tasksUpdated Task[] @relation("TaskUpdatedBy")
+  tasksDeleted Task[] @relation("TaskDeletedBy")
+  
+  remindersCreated Reminder[] @relation("ReminderCreatedBy")
+  remindersUpdated Reminder[] @relation("ReminderUpdatedBy")
+  remindersDeleted Reminder[] @relation("ReminderDeletedBy")
+  
+  userTypes UserType[] @relation("UserUserType")
+
+  notifications Notification[] @relation("UserNotification")
+
+  logNotifications LogNotification[] @relation("LogNotificationUser")
+  
+  participants ScheduleParticipant[] @relation("UserScheduleParticipant")
+
+  userDevices     UserDevice[] @relation("UserUserDevice")
+
+  userActivationId  Int
+  userActivation   UserActivation @relation("UserActivationId", fields: [userActivationId], references: [id])
+
+  verificationUsers     VerificationUser[]     @relation("UserVerificationUser")
+
   createdAt DateTime  @default(now())
   updatedAt DateTime  @default(now())
   deletedAt DateTime?
+}
+
+model UserActivation {
+  id          Int       @id @default(autoincrement())
+  name        String
+
+  users     User[]     @relation("UserActivationId")
+  
+  deletedAt   DateTime?
+}
+
+model VerificationUser {
+  id          Int       @id @default(autoincrement())
+  userId      String
+  otp         String
+
+  verificationAt  DateTime?
+  createdAt  DateTime?
+  expiredAt  DateTime?
+
+
+  user   User @relation("UserVerificationUser", fields: [userId], references: [id])
+  
+  deletedAt   DateTime?
+}
+
+model UserDevice {
+  id            String    @id @default(uuid())
+  publicId      String    @unique @default(uuid())
+
+  userId      String
+  deviceId    String
+  platformId  String
+  tokenId     String      @db.Text
+
+  user        User        @relation("UserUserDevice", fields: [userId], references: [id])
+
+  deletedAt   DateTime?
 }
 
 model Role {
@@ -48,6 +117,24 @@ model UserRole {
   @@unique([userId, roleId])
 }
 
+model TypeUser {
+  id          String   @id @default(uuid())
+  name        String   @unique
+
+  userTypes       UserType[]
+}
+
+model UserType {
+  id     String @id @default(uuid())
+  userId String
+  typeUserId String
+
+  user   User @relation("UserUserType", fields: [userId], references: [id])
+  typeUser   TypeUser @relation(fields: [typeUserId], references: [id])
+
+  @@unique([userId, typeUserId])
+}
+
 model Permission {
   id   String @id @default(uuid())
   code String @unique
@@ -67,32 +154,43 @@ model RolePermission {
   @@unique([roleId, permissionId])
 }
 
+model ScheduleStatus {
+  id   Int    @id @default(autoincrement())
+  name String
+  
+  schedules     Schedule[] @relation("ScheduleStatusSchedule")
+  tasks     Task[] @relation("ScheduleStatusTask")
 
-enum ScheduleStatus {
-  SCHEDULED
-  DONE
-  CANCELLED
+  deletedAt     DateTime?
 }
 
-enum ScheduleType {
-  MEETING
-  TASK
-  REMINDER
-  EVENT
-}
+model ScheduleType {
+  id   Int    @id @default(autoincrement())
+  name String
 
+  scheduless     Schedule[] @relation("ScheduleTypeSchedule")
+  tasks     Task[] @relation("ScheduleTypeTask")
+
+  deletedAt     DateTime?
+}
 
 model Schedule {
   id            String    @id @default(uuid())
+  publicId      String    @unique @default(uuid())
+
   title         String
+  host          String?
   description   String?
   
   startAt       DateTime
   endAt         DateTime
   timezone      String   @default("Asia/Jakarta")
 
-  status        ScheduleStatus @default(SCHEDULED)
-  type          ScheduleType
+  scheduleStatusId   Int
+  scheduleTypeId     Int
+
+  scheduleStatus   ScheduleStatus   @relation("ScheduleStatusSchedule", fields: [scheduleStatusId], references: [id])
+  scheduleType     ScheduleType     @relation("ScheduleTypeSchedule", fields: [scheduleTypeId], references: [id])
 
   location    String?
   isOnline    Boolean @default(true)
@@ -101,9 +199,11 @@ model Schedule {
   reminderAt    DateTime?
   isPublic      Boolean @default(false)
 
-  participants ScheduleParticipant[]
-
-  notifications Notification[]
+  participants ScheduleParticipant[] @relation("ScheduleScheduleParticipant")
+  
+  logNotifications LogNotification[] @relation("LogNotificationSchedule")
+  
+  notifications Notification[] @relation("ScheduleNotification")
 
   createdById   String
   updatedById   String
@@ -118,54 +218,211 @@ model Schedule {
   deletedAt     DateTime?
 }
 
-enum ParticipantRole {
-  HOST
-  ATTENDEE
+model Task {
+  id        Int    @id @default(autoincrement())
+  publicId  String @unique @default(uuid())
+
+  title         String
+  host          String?
+  description   String?
+  
+  startAt       DateTime
+  endAt         DateTime
+  timezone      String   @default("Asia/Jakarta")
+
+  scheduleStatusId   Int
+  scheduleTypeId     Int
+
+  scheduleStatus   ScheduleStatus   @relation("ScheduleStatusTask", fields: [scheduleStatusId], references: [id])
+  scheduleType     ScheduleType     @relation("ScheduleTypeTask", fields: [scheduleTypeId], references: [id])
+
+  location    String?
+  isOnline    Boolean @default(true)
+  meetingUrl  String?
+
+  reminderAt    DateTime?
+  isPublic      Boolean @default(false)
+
+  participants  ScheduleParticipant[] @relation("TaskScheduleParticipant")
+  notifications         Notification[]    @relation("TaskNotification")
+
+  createdById   String
+  updatedById   String
+  deletedById   String?
+
+  createdBy     User      @relation("TaskCreatedBy", fields: [createdById], references: [id])
+  updatedBy     User      @relation("TaskUpdatedBy", fields: [updatedById], references: [id])
+  deletedBy     User?     @relation("TaskDeletedBy", fields: [deletedById], references: [id])
+
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @default(now())
+  deletedAt     DateTime?
 }
 
-enum ParticipantStatus {
-  PENDING
-  ACCEPTED
-  REJECTED
+model Reminder {
+  id        Int    @id @default(autoincrement())
+  publicId  String @unique @default(uuid())
+
+  title         String
+  description   String?
+  
+  reminderAt    DateTime?
+  timezone      String   @default("Asia/Jakarta")
+  isActive      Boolean @default(true)
+
+  reminderTypeId    Int
+  repeatTypeId        Int
+  
+  reminderType    ReminderType   @relation("ReminderTypeReminder", fields: [reminderTypeId], references: [id])
+  repeatType      RepeatType   @relation("RepeatTypeReminder", fields: [repeatTypeId], references: [id])
+
+  notifications Notification[] @relation("ReminderNotification")
+
+  createdById   String
+  updatedById   String
+  deletedById   String?
+
+  createdBy     User      @relation("ReminderCreatedBy", fields: [createdById], references: [id])
+  updatedBy     User      @relation("ReminderUpdatedBy", fields: [updatedById], references: [id])
+  deletedBy     User?     @relation("ReminderDeletedBy", fields: [deletedById], references: [id])
+
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @default(now())
+  deletedAt     DateTime?
+}
+
+model ReminderType {
+  id   Int    @id @default(autoincrement())
+  name String
+
+  reminders Reminder[] @relation("ReminderTypeReminder")
+  
+  deletedAt     DateTime?
+}
+
+model RepeatType {
+  id   Int    @id @default(autoincrement())
+  name String
+
+  reminders Reminder[] @relation("RepeatTypeReminder")
+  
+  deletedAt     DateTime?
+}
+
+model ParticipantRole {
+  id   Int    @id @default(autoincrement())
+  name String
+
+  scheduleParticipants ScheduleParticipant[] @relation("ParticipantRoleScheduleParticipant")
+  
+  deletedAt     DateTime?
+}
+
+model ParticipantStatus {
+  id   Int    @id @default(autoincrement())
+  name String
+
+  scheduleParticipants ScheduleParticipant[] @relation("ParticipantStatusScheduleParticipant")
+  
+  deletedAt     DateTime?
 }
 
 model ScheduleParticipant {
-  id          String   @id @default(uuid())
-  scheduleId  String
+  id        Int    @id @default(autoincrement())
+  publicId  String @unique @default(uuid())
+
+  scheduleId  String?
+  taskId      Int?
   userId      String
 
-  role        ParticipantRole @default(ATTENDEE)
-  status      ParticipantStatus @default(PENDING)
+  participantRoleId   Int
+  participantStatusId     Int
 
-  schedule    Schedule @relation(fields: [scheduleId], references: [id])
-  user        User     @relation(fields: [userId], references: [id])
+  participantRole   ParticipantRole   @relation("ParticipantRoleScheduleParticipant", fields: [participantRoleId], references: [id])
+  participantStatus     ParticipantStatus     @relation("ParticipantStatusScheduleParticipant", fields: [participantStatusId], references: [id])
+
+  schedule    Schedule? @relation("ScheduleScheduleParticipant", fields: [scheduleId], references: [id])
+  task        Task? @relation("TaskScheduleParticipant", fields: [taskId], references: [id])
+  user        User     @relation("UserScheduleParticipant", fields: [userId], references: [id])
 
   joinedAt    DateTime?
 }
 
-enum NotificationType {
-  REMINDER
-  INVITATION
-  UPDATE
-  CANCELLATION
+model NotificationType {
+  id   Int    @id @default(autoincrement())
+  name String
+
+  notifications Notification[] @relation("NotificationTypeNotification")
+  logNotifications LogNotification[] @relation("LogNotificationNotificationType")
+
+  deletedAt     DateTime?
 }
 
 model Notification {
-  id          String   @id @default(uuid())
+  id          Int    @id @default(autoincrement())
+  publicId    String @unique @default(uuid())
+  userId      String
+  scheduleId  String?
+  reminderId  Int?
+  taskId  Int?
+
+  title       String
+  message     String
+
+  notificationTypeId     Int
+  notificationType       NotificationType     @relation("NotificationTypeNotification", fields: [notificationTypeId], references: [id])
+
+  isRead      Boolean @default(false)
+
+  sendAt      DateTime
+  sentAt      DateTime?
+
+  user        User     @relation("UserNotification", fields: [userId], references: [id])
+  schedule    Schedule? @relation("ScheduleNotification", fields: [scheduleId], references: [id])
+  reminder    Reminder? @relation("ReminderNotification", fields: [reminderId], references: [id])
+  task        Task? @relation("TaskNotification", fields: [taskId], references: [id])
+
+  createdAt   DateTime @default(now())
+}
+
+model LogNotification {
+  id          Int    @id @default(autoincrement())
   userId      String
   scheduleId  String?
 
   title       String
   message     String
 
-  type        NotificationType
+  notificationTypeId     Int
+  notificationType       NotificationType     @relation("LogNotificationNotificationType", fields: [notificationTypeId], references: [id])
+
   isRead      Boolean @default(false)
 
   sendAt      DateTime
   sentAt      DateTime?
 
-  user        User     @relation(fields: [userId], references: [id])
-  schedule    Schedule? @relation(fields: [scheduleId], references: [id])
+  user        User     @relation("LogNotificationUser", fields: [userId], references: [id])
+  schedule    Schedule? @relation("LogNotificationSchedule", fields: [scheduleId], references: [id])
 
   createdAt   DateTime @default(now())
+}
+
+model MurajaahEvent {
+  id            Int       @id @default(autoincrement())
+
+  userId        String
+  date          DateTime
+  timezone      String   @default("Asia/Jakarta")
+
+  createdById   String
+  updatedById   String
+  deletedById   String?
+
+  createdBy     User      @relation("MurajaahEventCreatedBy", fields: [createdById], references: [id])
+  updatedBy     User      @relation("MurajaahEventUpdatedBy", fields: [updatedById], references: [id])
+  deletedBy     User?     @relation("MurajaahEventDeletedBy", fields: [deletedById], references: [id])
+
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @default(now())
+  deletedAt     DateTime?
 }
