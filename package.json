@@ -32,5 +32,8 @@
     "tailwindcss": "^4",
     "tsx": "^4.21.0",
     "typescript": "^5"
+  },
+  "devDependencies": {
+    "@types/nodemailer": "^7.0.11"
   }
 }
