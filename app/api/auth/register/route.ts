@@ -1,9 +1,9 @@
 export const runtime = "nodejs";
 import bcrypt from "bcryptjs";
-import { successResponse, errorResponse, authUserResponse } from "@/lib/response";
+import { successResponse, errorResponse } from "@/lib/response";
 import prisma from "@/lib/prisma";
 import { encryption, generateToken, hashText } from "@/lib/auth/crypto";
-import { transporter } from "@/lib/auth/mailer";
+import { sendEmail } from "@/lib/auth/mailer";
 
 export async function POST(req: Request) {
   try {
@@ -46,10 +46,15 @@ export async function POST(req: Request) {
 
     const verifyLink = `${process.env.NEXT_PUBLIC_APP_URL}/verify-email?token=${otpEnc}`;
 
-    await transporter.sendMail({
-      to: email,
-      subject: "Verify Your Email",
-      html: `
+    await sendEmail({
+      to: [
+        {
+          name: fullname,
+          email: email,
+        }
+      ],
+      subject: 'Verify Your Email',
+      htmlContent: `
         <h2>Email Verification</h2>
         <p>Klik tombol di bawah untuk verifikasi:</p>
         <a href="${verifyLink}" 
@@ -59,6 +64,20 @@ export async function POST(req: Request) {
         <p>Link berlaku 5 menit.</p>
       `,
     });
+
+    // await transporter.sendMail({
+    //   to: email,
+    //   subject: "Verify Your Email",
+    //   html: `
+    //     <h2>Email Verification</h2>
+    //     <p>Klik tombol di bawah untuk verifikasi:</p>
+    //     <a href="${verifyLink}" 
+    //       style="padding:10px 20px;background:#2563eb;color:white;text-decoration:none;border-radius:6px;">
+    //       Verify Email
+    //     </a>
+    //     <p>Link berlaku 5 menit.</p>
+    //   `,
+    // });
 
     const user = await prisma.user.create({
       data: {
