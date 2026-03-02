@@ -3,7 +3,6 @@ import bcrypt from "bcryptjs";
 import { successResponse, errorResponse, authUserResponse } from "@/lib/response";
 import prisma from "@/lib/prisma";
 import { encryption, generateToken, hashText } from "@/lib/auth/crypto";
-import { transporter } from "@/lib/auth/mailer";
 
 export async function POST(req: Request) {
   try {
@@ -43,17 +42,17 @@ export async function POST(req: Request) {
     
     const hashedPassword = await bcrypt.hash(password, 10);
 
-    await transporter.sendMail({
-      from: `"System" <${process.env.EMAIL_USER}>`,
-      to: email,
-      subject: "Kode OTP Anda",
-      html: `
-        <h2>OTP Verification</h2>
-        <p>Kode OTP Anda:</p>
-        <h1>${otp}</h1>
-        <p>Berlaku selama 5 menit.</p>
-      `,
-    });
+    // await transporter.sendMail({
+    //   from: `"System" <${process.env.EMAIL_USER}>`,
+    //   to: email,
+    //   subject: "Kode OTP Anda",
+    //   html: `
+    //     <h2>OTP Verification</h2>
+    //     <p>Kode OTP Anda:</p>
+    //     <h1>${otp}</h1>
+    //     <p>Berlaku selama 5 menit.</p>
+    //   `,
+    // });
 
     const user = await prisma.user.create({
       data: {
