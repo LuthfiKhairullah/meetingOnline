@@ -5,7 +5,7 @@ import { signJwt } from "@/lib/jwt";
 import { authUserResponse, errorResponse, successLoginResponse, successResponse } from "@/lib/response";
 import prisma from "@/lib/prisma";
 import { serializeUser } from "@/lib/serializers/user.serializer";
-import { hashText } from "@/lib/auth/crypto";
+import { encryption, hashText } from "@/lib/auth/crypto";
 import admin from "@/lib/firebase";
 
 export async function POST(req: Request) {
@@ -67,13 +67,13 @@ export async function POST(req: Request) {
     const notifMessage = 'Welcome to Apps';
     const notifType = 1;
   
-    const notificationType = await prisma.notificationType.findUnique({
+    await prisma.notificationType.findUnique({
       where: {
         id: 1,
       }
     });
   
-    const firebase = await admin.messaging().send({
+    await admin.messaging().send({
         notification: {
             title: notifTitle,
             body: notifMessage,
@@ -85,10 +85,9 @@ export async function POST(req: Request) {
             color: "#1E88E5",
           },
         },
-  
     });
   
-    const notif = await prisma.notification.create({
+    await prisma.notification.create({
       data: {
         userId: user.id,
         title: notifTitle,
@@ -98,7 +97,7 @@ export async function POST(req: Request) {
       },
     });
   
-    return successLoginResponse("Login berhasil", token, authUserResponse(userDevice.publicId, refreshToken, token, showUser), 201);
+    return successLoginResponse("Login berhasil", token, authUserResponse(encryption(userDevice.publicId), refreshToken, token, showUser), 201);
   } catch (error: any) {
     return errorResponse(error.message, 409);
   }
