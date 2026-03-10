@@ -2,7 +2,6 @@ import { Prisma } from "@/generated/prisma/client";
 import { requirePermission } from "@/lib/auth/requirePermission";
 import prisma from "@/lib/prisma";
 import { errorResponse, successResponse } from "@/lib/response";
-import { NextResponse } from "next/server";
 
 export async function PUT(req: Request, { params }: any) {
   const body = await req.json();

@@ -1,8 +1,6 @@
 import { requirePermission } from "@/lib/auth/requirePermission";
-import { requireRole } from "@/lib/auth/requireRole";
 import prisma from "@/lib/prisma";
 import { errorResponse, successResponse } from "@/lib/response";
-import { NextResponse } from "next/server";
 
 export async function POST(req: Request) {
   const userId = req.headers.get("x-user-id")!;

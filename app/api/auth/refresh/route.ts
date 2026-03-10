@@ -4,9 +4,8 @@ import prisma from "@/lib/prisma";
 import { errorResponse, successResponse } from "@/lib/response";
 
 export async function POST(req: Request) {
-    const { publicId, platform, refreshToken, device } = await req.json();
-
     try {
+        const { publicId, platform, refreshToken, device } = await req.json();
         const { id, username, deviceId  } = verifyJwt(refreshToken);
 
         const storedToken = await prisma.userDevice.findUnique({

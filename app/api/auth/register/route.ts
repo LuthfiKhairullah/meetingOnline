@@ -91,6 +91,13 @@ export async function POST(req: Request) {
         otpExpired: expiry,
       },
     });
+
+    await prisma.userType.create({
+      data: {
+        userId: user.id,
+        typeUserId: process.env.USER_TYPE ?? '',
+      },
+    });
     
     return successResponse("Registrasi berhasil, verifikasi email anda", null, 201);
   } catch (error) {

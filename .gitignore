@@ -42,6 +42,8 @@ next-env.d.ts
 
 /lib/generated/prisma
 /app/api/notificationType
+/app/api/scheduleStatus
+/app/api/scheduleType
 /app/api/typeUsers
 /app/api/userActivation
 /app/api/userTypes

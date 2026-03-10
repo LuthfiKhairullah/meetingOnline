@@ -11,8 +11,8 @@ model User {
   id            String    @id @default(uuid())
   username      String    @unique(map: "User_username_key")
   fullname      String
-  email         String
-  emailHash     String
+  email         String?
+  emailHash     String?
   password      String
   nik           String?   @db.VarChar(6)
   alamat        String?    @db.Text
@@ -76,7 +76,6 @@ model VerificationUser {
   verificationAt  DateTime?
   createdAt  DateTime?
   expiredAt  DateTime?
-
 
   user   User @relation("UserVerificationUser", fields: [userId], references: [id])
   
@@ -383,6 +382,7 @@ model Notification {
   task        Task? @relation("TaskNotification", fields: [taskId], references: [id])
 
   createdAt   DateTime @default(now())
+  deletedAt   DateTime?
 }
 
 model LogNotification {
@@ -405,6 +405,7 @@ model LogNotification {
   schedule    Schedule? @relation("LogNotificationSchedule", fields: [scheduleId], references: [id])
 
   createdAt   DateTime @default(now())
+  deletedAt   DateTime?
 }
 
 model MurajaahEvent {

@@ -1,5 +1,4 @@
-import { NextResponse } from "next/server";
-import { decryption, encryption, hashText } from "@/lib/auth/crypto";
+import { decryption, hashText } from "@/lib/auth/crypto";
 import prisma from "@/lib/prisma";
 import { errorResponse, successResponse } from "@/lib/response";
 

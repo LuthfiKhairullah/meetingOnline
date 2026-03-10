@@ -5,20 +5,19 @@ import { errorResponse, successResponse } from "@/lib/response";
 import { NextResponse } from "next/server";
 
 export async function PUT(req: Request, { params }: any) {
-  const body = await req.json();
-  const types: string[] = JSON.parse(
-    req.headers.get("x-user-type") || "[]"
-  );
-  if(types.includes(process.env.USER_TYPE ?? '')) {
-    return errorResponse("User not verified", 409);
-  }
-  const permissions: string[] = JSON.parse(
-    req.headers.get("x-user-permissions") || "[]"
-  );
-
-  requirePermission(permissions, ["notifications.update"]);
-
   try {
+    const body = await req.json();
+    const types: string[] = JSON.parse(
+      req.headers.get("x-user-type") || "[]"
+    );
+    if(types.includes(process.env.USER_TYPE ?? '')) {
+      return errorResponse("User not verified", 409);
+    }
+    const permissions: string[] = JSON.parse(
+      req.headers.get("x-user-permissions") || "[]"
+    );
+  
+    requirePermission(permissions, ["notifications.update"]);
     const notification = await prisma.notification.update({
       where: { id: params.id },
       data: {
@@ -44,20 +43,19 @@ export async function PUT(req: Request, { params }: any) {
 }
 
 export async function DELETE(req: Request, { params }: any) {
-  const types: string[] = JSON.parse(
-    req.headers.get("x-user-type") || "[]"
-  );
-  if(types.includes(process.env.USER_TYPE ?? '')) {
-    return errorResponse("User not verified", 409);
-  }
-  const userId = req.headers.get("x-user-id")!;
-  const permissions: string[] = JSON.parse(
-    req.headers.get("x-user-permissions") || "[]"
-  );
-
-  requirePermission(permissions, ["notifications.delete"]);
-
   try {
+    const types: string[] = JSON.parse(
+      req.headers.get("x-user-type") || "[]"
+    );
+    if(types.includes(process.env.USER_TYPE ?? '')) {
+      return errorResponse("User not verified", 409);
+    }
+    const userId = req.headers.get("x-user-id")!;
+    const permissions: string[] = JSON.parse(
+      req.headers.get("x-user-permissions") || "[]"
+    );
+  
+    requirePermission(permissions, ["notifications.delete"]);
     await prisma.notification.delete({
       where: { id: params.id },
     });
