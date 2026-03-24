@@ -2,10 +2,10 @@ import { Prisma } from "@/generated/prisma/client";
 import { requirePermission } from "@/lib/auth/requirePermission";
 import prisma from "@/lib/prisma";
 import { errorResponse, successResponse } from "@/lib/response";
-import { NextResponse } from "next/server";
 
-export async function PUT(req: Request, { params }: any) {
+export async function PUT(req: Request, context: { params: Promise<{ id: string }> }) {
   try {
+    const { id } = await context.params;
     const types: string[] = JSON.parse(
       req.headers.get("x-user-type") || "[]"
     );
@@ -21,7 +21,7 @@ export async function PUT(req: Request, { params }: any) {
   
     const body = await req.json();
     const permission = await prisma.permission.update({
-      where: { id: params.id },
+      where: { id: id },
       data: {
         code: body.code,
         name: body.name,
@@ -43,23 +43,23 @@ export async function PUT(req: Request, { params }: any) {
   }
 }
 
-export async function DELETE(req: Request, { params }: any) {
-  const types: string[] = JSON.parse(
-    req.headers.get("x-user-type") || "[]"
-  );
-  if(types.includes(process.env.USER_TYPE ?? '')) {
-    return errorResponse("User not verified", 409);
-  }
-
-  const permissions: string[] = JSON.parse(
-    req.headers.get("x-user-permissions") || "[]"
-  );
-
-  requirePermission(permissions, ["permissions.delete"]);
-
+export async function DELETE(req: Request, context: { params: Promise<{ id: string }> }) {
   try {
+    const { id } = await context.params;
+    const types: string[] = JSON.parse(
+      req.headers.get("x-user-type") || "[]"
+    );
+    if(types.includes(process.env.USER_TYPE ?? '')) {
+      return errorResponse("User not verified", 409);
+    }
+  
+    const permissions: string[] = JSON.parse(
+      req.headers.get("x-user-permissions") || "[]"
+    );
+  
+    requirePermission(permissions, ["permissions.delete"]);
     await prisma.permission.delete({
-      where: { id: params.id },
+      where: { id: id },
     });
 
   return successResponse("Data deleted successfully", 200);

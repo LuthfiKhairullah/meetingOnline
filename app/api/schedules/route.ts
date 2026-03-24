@@ -8,7 +8,7 @@ export async function POST(req: Request) {
     const types: string[] = JSON.parse(
       req.headers.get("x-user-type") || "[]"
     );
-    if(types.includes(process.env.USER_TYPE ?? '')) {
+    if(!types.includes(process.env.USER_TYPE ?? '')) {
       return errorResponse("User not verified", 409);
     }
   
@@ -31,16 +31,28 @@ export async function POST(req: Request) {
     if (overlap) {
         return errorResponse("Schedule overlap", 409);
     }
+    let location = '';
+    if(body.location != null && body.location != '') {
+      location = body.location;
+    }
+    let type = 1;
+    if(body.type != null && body.type != '') {
+      type = body.type;
+    }
+    let status = 1;
+    if(body.status != null && body.status != '') {
+      status = body.status;
+    }
 
     const schedule = await prisma.schedule.create({
       data: {
         title: body.title,
         description: body.description,
-        startAt: new Date(body.startAt),
-        endAt: new Date(body.endAt),
-        location: body.location,
-        scheduleTypeId: body.type,
-        scheduleStatusId: body.status,
+        startAt: body.startAt,
+        endAt: body.endAt,
+        location: location,
+        scheduleTypeId: type,
+        scheduleStatusId: status,
         host: body.host,
         meetingUrl: body.meetingUrl,
         createdById: userId,
@@ -59,7 +71,7 @@ export async function GET(req: Request) {
     const types: string[] = JSON.parse(
       req.headers.get("x-user-type") || "[]"
     );
-    if(types.includes(process.env.USER_TYPE ?? '')) {
+    if(!types.includes(process.env.USER_TYPE ?? '')) {
       return errorResponse("User not verified", 409);
     }
 
@@ -80,6 +92,14 @@ export async function GET(req: Request) {
         scheduleStatus: true,
         scheduleType: true,
       },
+      orderBy: [
+        {
+          startAt: 'desc',
+        },
+        {
+          endAt: 'desc',
+        }
+      ],
     });
 
     return successResponse("Data loaded successfully", schedules, 200);

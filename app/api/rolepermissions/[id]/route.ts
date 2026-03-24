@@ -4,8 +4,9 @@ import prisma from "@/lib/prisma";
 import { errorResponse, successResponse } from "@/lib/response";
 import { NextResponse } from "next/server";
 
-export async function PUT(req: Request, { params }: any) {
+export async function PUT(req: Request, context: { params: Promise<{ id: string }> }) {
   try {
+    const { id } = await context.params;
     const body = await req.json();
     const types: string[] = JSON.parse(
       req.headers.get("x-user-type") || "[]"
@@ -20,7 +21,7 @@ export async function PUT(req: Request, { params }: any) {
   
     requirePermission(permissions, ["rolepermissions.update"]);
     const rolePermission = await prisma.rolePermission.update({
-      where: { id: params.id },
+      where: { id: id },
       data: {
         roleId: body.roleId,
         permissionId: body.permissionId,
@@ -42,23 +43,23 @@ export async function PUT(req: Request, { params }: any) {
   }
 }
 
-export async function DELETE(req: Request, { params }: any) {
-  const types: string[] = JSON.parse(
-    req.headers.get("x-user-type") || "[]"
-  );
-  if(types.includes(process.env.USER_TYPE ?? '')) {
-    return errorResponse("User not verified", 409);
-  }
-
-  const permissions: string[] = JSON.parse(
-    req.headers.get("x-user-permissions") || "[]"
-  );
-
-  requirePermission(permissions, ["rolepermissions.delete"]);
-
+export async function DELETE(req: Request, context: { params: Promise<{ id: string }> }) {
   try {
+    const { id } = await context.params;
+    const types: string[] = JSON.parse(
+      req.headers.get("x-user-type") || "[]"
+    );
+    if(types.includes(process.env.USER_TYPE ?? '')) {
+      return errorResponse("User not verified", 409);
+    }
+  
+    const permissions: string[] = JSON.parse(
+      req.headers.get("x-user-permissions") || "[]"
+    );
+  
+    requirePermission(permissions, ["rolepermissions.delete"]);
     await prisma.rolePermission.delete({
-      where: { id: params.id },
+      where: { id: id },
     });
 
   return successResponse("Data deleted successfully", 200);

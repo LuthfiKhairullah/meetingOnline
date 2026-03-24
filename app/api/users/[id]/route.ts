@@ -3,24 +3,59 @@ import { encryption, hashText } from "@/lib/auth/crypto";
 import { requirePermission } from "@/lib/auth/requirePermission";
 import prisma from "@/lib/prisma";
 import { errorResponse, successResponse } from "@/lib/response";
+import { serializeUser } from "@/lib/serializers/user.serializer";
 import bcrypt from "bcryptjs";
 
-export async function PUT(req: Request, { params }: any) {
-  const types: string[] = JSON.parse(
-    req.headers.get("x-user-type") || "[]"
-  );
-  
-  if(types.includes(process.env.USER_TYPE ?? '')) {
-    return errorResponse("User not verified", 409);
-  }
-  
-  const permissions: string[] = JSON.parse(
-    req.headers.get("x-user-permissions") || "[]"
-  );
-
-  requirePermission(permissions, ["users.update"]);
-
+export async function GET(req: Request, context: { params: Promise<{ id: string }> }) {
   try {
+    const { id } = await context.params;
+    const types: string[] = JSON.parse(
+      req.headers.get("x-user-type") || "[]"
+    );
+    if(!types.includes(process.env.USER_TYPE ?? '')) {
+      return errorResponse("User not verified", 409);
+    }
+  
+    const permissions: string[] = JSON.parse(
+      req.headers.get("x-user-permissions") || "[]"
+    );
+  
+    requirePermission(permissions, ["users.index"]);
+    const users = await prisma.user.findFirst({
+      where: {
+        id: id,
+        deletedAt: null
+      },
+      include: {
+        userActivation: true
+      }
+    });
+    
+    const showUsers = users != null ? serializeUser(users) : null;
+
+    return successResponse("Data loaded successfully", showUsers, 200);
+  } catch (error: any) {
+    return errorResponse(error.message, 409);
+  }
+}
+
+
+export async function PUT(req: Request, context: { params: Promise<{ id: string }> }) {
+  try {
+    const { id } = await context.params;
+  
+    const types: string[] = JSON.parse(
+      req.headers.get("x-user-type") || "[]"
+    );
+    if(!types.includes(process.env.USER_TYPE ?? '')) {
+      return errorResponse("User not verified", 409);
+    }
+  
+    const permissions: string[] = JSON.parse(
+      req.headers.get("x-user-permissions") || "[]"
+    );
+  
+    requirePermission(permissions, ["users.update"]);
     const { fullname, username, password, email } = await req.json();
     const usernameValue = username.trim();
     const fullnameValue = fullname.trim();
@@ -45,7 +80,7 @@ export async function PUT(req: Request, { params }: any) {
 
     const dataUser = await prisma.user.findUnique({
       where: {
-        id: params.id,
+        id: id,
       },
     });
     if(!dataUser) {
@@ -82,7 +117,7 @@ export async function PUT(req: Request, { params }: any) {
 
     await prisma.user.update({
       where: {
-        id: params.id,
+        id: id,
         deletedAt: null
       },
       data,
@@ -103,24 +138,24 @@ export async function PUT(req: Request, { params }: any) {
   }
 }
 
-export async function DELETE(req: Request, { params }: any) {
-  const types: string[] = JSON.parse(
-    req.headers.get("x-user-type") || "[]"
-  );
-  
-  if(types.includes(process.env.USER_TYPE ?? '')) {
-    return errorResponse("User not verified", 409);
-  }
-  
-  const permissions: string[] = JSON.parse(
-    req.headers.get("x-user-permissions") || "[]"
-  );
-
-  requirePermission(permissions, ["users.delete"]);
-
+export async function DELETE(req: Request, context: { params: Promise<{ id: string }> }) {
   try {
+    const { id } = await context.params;
+    const types: string[] = JSON.parse(
+      req.headers.get("x-user-type") || "[]"
+    );
+    
+    if(types.includes(process.env.USER_TYPE ?? '')) {
+      return errorResponse("User not verified", 409);
+    }
+    
+    const permissions: string[] = JSON.parse(
+      req.headers.get("x-user-permissions") || "[]"
+    );
+  
+    requirePermission(permissions, ["users.delete"]);
     await prisma.user.update({
-      where: { id: params.id },
+      where: { id: id },
       data: {
         deletedAt: new Date(),
       }

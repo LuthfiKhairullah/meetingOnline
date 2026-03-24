@@ -2,24 +2,23 @@ import { encryption, generateToken, hashText } from "@/lib/auth/crypto";
 import { requirePermission } from "@/lib/auth/requirePermission";
 import prisma from "@/lib/prisma";
 import { errorResponse, successResponse } from "@/lib/response";
+import { serializeUser } from "@/lib/serializers/user.serializer";
 import bcrypt from "bcryptjs";
 
 export async function POST(req: Request) {
-  const types: string[] = JSON.parse(
-    req.headers.get("x-user-type") || "[]"
-  );
-  
-  if(types.includes(process.env.USER_TYPE ?? '')) {
-    return errorResponse("User not verified", 409);
-  }
-  
-  const permissions: string[] = JSON.parse(
-    req.headers.get("x-user-permissions") || "[]"
-  );
-
-  requirePermission(permissions, ["users.store"]);
-
   try {
+    const types: string[] = JSON.parse(
+      req.headers.get("x-user-type") || "[]"
+    );
+    if(!types.includes(process.env.USER_TYPE ?? '')) {
+      return errorResponse("User not verified", 409);
+    }
+  
+    const permissions: string[] = JSON.parse(
+      req.headers.get("x-user-permissions") || "[]"
+    );
+  
+    requirePermission(permissions, ["users.store"]);
     const { fullname, username, password, email } = await req.json();
 
     if (!fullname || !username || !password) {
@@ -81,11 +80,10 @@ export async function GET(req: Request) {
   const types: string[] = JSON.parse(
     req.headers.get("x-user-type") || "[]"
   );
-  
-  if(types.includes(process.env.USER_TYPE ?? '')) {
+  if(!types.includes(process.env.USER_TYPE ?? '')) {
     return errorResponse("User not verified", 409);
   }
-  
+
   const permissions: string[] = JSON.parse(
     req.headers.get("x-user-permissions") || "[]"
   );
@@ -97,9 +95,17 @@ export async function GET(req: Request) {
       where: {
         deletedAt: null
       },
+      include: {
+        userActivation: true
+      }
+    });
+    
+    const showUsers: any[] = [];
+    users.forEach(element => {
+      showUsers.push(serializeUser(element));
     });
 
-    return successResponse("Data loaded successfully", users, 200);
+    return successResponse("Data loaded successfully", showUsers, 200);
   } catch (error: any) {
     return errorResponse(error.message, 409);
   }

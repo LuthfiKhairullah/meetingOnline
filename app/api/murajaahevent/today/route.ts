@@ -8,7 +8,8 @@ export async function GET(req: Request) {
     const types: string[] = JSON.parse(
       req.headers.get("x-user-type") || "[]"
     );
-    if(types.includes(process.env.USER_TYPE ?? '')) {
+  
+    if(!types.includes(process.env.USER_TYPE ?? '')) {
       return errorResponse("User not verified", 409);
     }
     const permissions: string[] = JSON.parse(
@@ -16,7 +17,6 @@ export async function GET(req: Request) {
     );
   
     requirePermission(permissions, ["murajaahEvents.today"]);
-  
     const today = new Date();
     today.setHours(0, 0, 0, 0);
   
@@ -42,6 +42,7 @@ export async function GET(req: Request) {
       'done': murajaahToday,
     }, 200);
   } catch (error: any) {
+    console.log('error.message, 409');
     return errorResponse(error.message, 409);
   }
 }

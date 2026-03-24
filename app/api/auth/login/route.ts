@@ -30,27 +30,27 @@ export async function POST(req: Request) {
         return errorResponse("User not verified", 401);
       }
     }
-  
+    
     const isValid = await bcrypt.compare(password, user.password);
-  
+    
     if (!isValid) {
       return errorResponse("Username atau password salah", 401);
     }
-  
+    
     const token = signJwt({
       id: user.id,
       username: user.username,
     });
-  
+    
     const refreshToken = signJwt({
       id: user.id,
       username: user.username,
       deviceId: fcmToken,
     });
-  
+    
     const date = new Date();
     date.setDate(date.getDate() + 7);
-  
+    
     const userDevice = await prisma.userDevice.create({
       data: {
         userId: user.id,
@@ -60,9 +60,9 @@ export async function POST(req: Request) {
         deletedAt: date,
       },
     });
-  
+    
     const showUser = serializeUser(user);
-  
+    
     const notifTitle = 'Login Success';
     const notifMessage = 'Welcome to Apps';
     const notifType = 1;
@@ -72,33 +72,37 @@ export async function POST(req: Request) {
         id: 1,
       }
     });
-  
-    await admin.messaging().send({
-        notification: {
-            title: notifTitle,
-            body: notifMessage,
-        },
-        token: fcmToken,
-        android: {
+
+    if(fcmToken != null) {
+      await admin.messaging().send({
           notification: {
-            icon: "ic_launcher", // TANPA .png
-            color: "#1E88E5",
+              title: notifTitle,
+              body: notifMessage,
           },
+          token: fcmToken,
+          android: {
+            notification: {
+              icon: "ic_launcher", // TANPA .png
+              color: "#1E88E5",
+            },
+          },
+      });
+
+      await prisma.notification.create({
+        data: {
+          userId: user.id,
+          title: notifTitle,
+          notificationTypeId: notifType,
+          message: notifMessage,
+          sendAt: new Date(),
         },
-    });
+      });
+    }
   
-    await prisma.notification.create({
-      data: {
-        userId: user.id,
-        title: notifTitle,
-        notificationTypeId: notifType,
-        message: notifMessage,
-        sendAt: new Date(),
-      },
-    });
   
     return successLoginResponse("Login berhasil", token, authUserResponse(encryption(userDevice.publicId), refreshToken, token, showUser), 201);
   } catch (error: any) {
+    console.log(error);
     return errorResponse(error.message, 409);
   }
 }

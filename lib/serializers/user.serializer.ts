@@ -7,8 +7,9 @@ export function serializeUser(user: User) {
     username: user.username,
     fullname: user.fullname,
     alamat: user.alamat,
-    email: maskEmail(decryption(user.email)),
-    noHp: user.noHp ? maskPhone(decryption(user.noHp)) : null,
+    // email: (user.email && ((user.email ?? '') != '')) ? maskEmail(decryption(user.email)) : null,
+    // noHp: (user.noHp && ((user.noHp ?? '') != '')) ? maskPhone(decryption(user.noHp)) : null,
     nik: user.nik,
+    userStatus: user?.userActivation?.name,
   };
 }

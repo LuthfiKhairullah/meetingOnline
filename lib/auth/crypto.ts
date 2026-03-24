@@ -25,10 +25,13 @@ export function encryption(text: string) {
 export function decryption(text: string) {
   const [ivHex, encrypted] = text.split(":");
   const iv = Buffer.from(ivHex, "hex");
-
+  
+  
+  console.log(iv);
   const decipher = crypto.createDecipheriv(algorithm, key, iv);
   let decrypted = decipher.update(encrypted, "hex", "utf8");
   decrypted += decipher.final("utf8");
+  console.log(text);
 
   return decrypted;
 }

@@ -8,7 +8,8 @@ export async function POST(req: Request) {
     const types: string[] = JSON.parse(
       req.headers.get("x-user-type") || "[]"
     );
-    if(types.includes(process.env.USER_TYPE ?? '')) {
+
+    if(!types.includes(process.env.USER_TYPE ?? '')) {
       return errorResponse("User not verified", 409);
     }
     const permissions: string[] = JSON.parse(
@@ -16,8 +17,8 @@ export async function POST(req: Request) {
     );
   
     requirePermission(permissions, ["murajaahEvents.store"]);
-  
-    const murajaahEvent = await prisma.murajaahEvent.create({
+
+    await prisma.murajaahEvent.create({
       data: {
         userId: userId,
         createdById: userId,
@@ -28,6 +29,7 @@ export async function POST(req: Request) {
   
     return successResponse("Data created successfully", null, 200);
   } catch (error: any) {
+    console.log(error.message);
     return errorResponse(error.message, 409);
   }
 }

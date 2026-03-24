@@ -3,14 +3,62 @@ import { requirePermission } from "@/lib/auth/requirePermission";
 import prisma from "@/lib/prisma";
 import { errorResponse, successResponse } from "@/lib/response";
 
-export async function PUT(req: Request, { params }: any) {
+export async function GET(req: Request, context: { params: Promise<{ id: string }> }) {
   try {
+    const { id } = await context.params;
+    const types: string[] = JSON.parse(
+      req.headers.get("x-user-type") || "[]"
+    );
+    if(!types.includes(process.env.USER_TYPE ?? '')) {
+      return errorResponse("User not verified", 409);
+    }
+
+    const permissions: string[] = JSON.parse(
+      req.headers.get("x-user-permissions") || "[]"
+    );
+
+    requirePermission(permissions, ["schedule.index"]);
+
+    const schedules = await prisma.schedule.findFirst({
+      where: {
+        publicId: id,
+        deletedAt: null,
+      },
+      include: {
+        participants: {
+          include: {
+            user: true
+          }
+        },
+        scheduleStatus: true,
+        scheduleType: true,
+      },
+      orderBy: [
+        {
+          startAt: 'desc',
+        },
+        {
+          endAt: 'desc',
+        }
+      ],
+    });
+
+    return successResponse("Data loaded successfully", schedules, 200);
+  } catch (error: any) {
+    return errorResponse(error.message, 409);
+  }
+}
+
+export async function PUT(req: Request, context: { params: Promise<{ id: string }> }) {
+  try {
+    const { id } = await context.params;
+
     const body = await req.json();
     const userId = req.headers.get("x-user-id")!;
     const types: string[] = JSON.parse(
       req.headers.get("x-user-type") || "[]"
     );
-    if(types.includes(process.env.USER_TYPE ?? '')) {
+    if(!types.includes(process.env.USER_TYPE ?? '')) {
       return errorResponse("User not verified", 409);
     }
   
@@ -21,7 +69,7 @@ export async function PUT(req: Request, { params }: any) {
     requirePermission(permissions, ["schedule.update"]);
 
     const schedule = await prisma.schedule.update({
-      where: { id: params.id },
+      where: { publicId: id },
       data: {
         title: body.title,
         description: body.description,
@@ -49,13 +97,14 @@ export async function PUT(req: Request, { params }: any) {
   }
 }
 
-export async function DELETE(req: Request, { params }: any) {
+export async function DELETE(req: Request, context: { params: Promise<{ id: string }> }) {
   try {
+    const { id } = await context.params;
     const userId = req.headers.get("x-user-id")!;
     const types: string[] = JSON.parse(
       req.headers.get("x-user-type") || "[]"
     );
-    if(types.includes(process.env.USER_TYPE ?? '')) {
+    if(!types.includes(process.env.USER_TYPE ?? '')) {
       return errorResponse("User not verified", 409);
     }
   
@@ -65,7 +114,7 @@ export async function DELETE(req: Request, { params }: any) {
   
     requirePermission(permissions, ["schedule.delete"]);
     await prisma.schedule.update({
-      where: { id: params.id },
+      where: { id: id },
       data: {
         deletedAt: new Date(),
         deletedById: userId,

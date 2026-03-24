@@ -98,6 +98,13 @@ export async function POST(req: Request) {
         typeUserId: process.env.USER_TYPE ?? '',
       },
     });
+
+    await prisma.userRole.create({
+      data: {
+        userId: user.id,
+        roleId: '033d9f73-2656-4ec7-8a1c-336722766bc3',
+      },
+    });
     
     return successResponse("Registrasi berhasil, verifikasi email anda", null, 201);
   } catch (error) {

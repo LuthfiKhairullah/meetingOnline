@@ -4,8 +4,9 @@ import prisma from "@/lib/prisma";
 import { errorResponse, successResponse } from "@/lib/response";
 import { NextResponse } from "next/server";
 
-export async function PUT(req: Request, { params }: any) {
+export async function PUT(req: Request, context: { params: Promise<{ id: string }> }) {
   try {
+    const { id } = await context.params;
     const body = await req.json();
     const types: string[] = JSON.parse(
       req.headers.get("x-user-type") || "[]"
@@ -20,7 +21,7 @@ export async function PUT(req: Request, { params }: any) {
   
     requirePermission(permissions, ["roles.update"]);
     const role = await prisma.role.update({
-      where: { id: params.id },
+      where: { id: id },
       data: {
         name: body.name,
         description: body.description,
@@ -42,9 +43,9 @@ export async function PUT(req: Request, { params }: any) {
   }
 }
 
-export async function DELETE(req: Request, { params }: { params: Promise<{ id: string }> }) {
-  
+export async function DELETE(req: Request, context: { params: Promise<{ id: string }> }) {
   try {
+    const { id } = await context.params;
     const types: string[] = JSON.parse(
       req.headers.get("x-user-type") || "[]"
     );
@@ -57,9 +58,7 @@ export async function DELETE(req: Request, { params }: { params: Promise<{ id: s
     );
   
     requirePermission(permissions, ["roles.delete"]);
-
-    const { id } = await params;
-
+    
     await prisma.role.delete({
       where: { id },
     });

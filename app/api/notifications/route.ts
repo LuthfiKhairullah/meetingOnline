@@ -10,7 +10,7 @@ export async function POST(req: Request) {
     const types: string[] = JSON.parse(
       req.headers.get("x-user-type") || "[]"
     );
-    if(types.includes(process.env.USER_TYPE ?? '')) {
+    if(!types.includes(process.env.USER_TYPE ?? '')) {
       return errorResponse("User not verified", 409);
     }
   
@@ -43,7 +43,7 @@ export async function GET(req: Request) {
     const types: string[] = JSON.parse(
       req.headers.get("x-user-type") || "[]"
     );
-    if(types.includes(process.env.USER_TYPE ?? '')) {
+    if(!types.includes(process.env.USER_TYPE ?? '')) {
       return errorResponse("User not verified", 409);
     }
 
