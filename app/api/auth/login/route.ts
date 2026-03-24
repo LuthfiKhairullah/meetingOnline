@@ -21,6 +21,9 @@ export async function POST(req: Request) {
         username,
         deletedAt: null,
       },
+      include: {
+        userActivation: true,
+      }
     });
   
     if (!user) {
@@ -61,7 +64,7 @@ export async function POST(req: Request) {
       },
     });
     
-    const showUser = serializeUser(user);
+    const showUser = serializeUser(user, user.userActivation.name);
     
     const notifTitle = 'Login Success';
     const notifMessage = 'Welcome to Apps';

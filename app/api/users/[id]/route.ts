@@ -31,7 +31,7 @@ export async function GET(req: Request, context: { params: Promise<{ id: string 
       }
     });
     
-    const showUsers = users != null ? serializeUser(users) : null;
+    const showUsers = users != null ? serializeUser(users, users.userActivation.name) : null;
 
     return successResponse("Data loaded successfully", showUsers, 200);
   } catch (error: any) {

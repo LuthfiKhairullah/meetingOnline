@@ -102,7 +102,7 @@ export async function GET(req: Request) {
     
     const showUsers: any[] = [];
     users.forEach(element => {
-      showUsers.push(serializeUser(element));
+      showUsers.push(serializeUser(element, element.userActivation.name));
     });
 
     return successResponse("Data loaded successfully", showUsers, 200);
