@@ -37,6 +37,7 @@ export async function POST(req: Request) {
     if (existingUser) {
       return errorResponse("Username sudah terdaftar", 409);
     }
+    console.log(email);
 
     const hashedPassword = await bcrypt.hash(password, 10);
 
@@ -45,8 +46,10 @@ export async function POST(req: Request) {
     data.username = username;
     data.password = hashedPassword;
     data.userActivationId = 3;
+    data.email = '';
+    data.emailHash = '';
 
-    if(email != '') {
+    if(email && email != "") {
       const emailHash = hashText(email);
       
       const existingEmail = await prisma.user.findFirst({
@@ -62,7 +65,7 @@ export async function POST(req: Request) {
       data.email = emailEnc;
       data.emailHash = emailHash;
     }
-
+    
     const user = await prisma.user.create({
       data: data,
     });
@@ -70,7 +73,7 @@ export async function POST(req: Request) {
     await prisma.userType.create({
       data: {
         userId: user.id,
-        typeUserId: process.env.USER_TYPE ?? '',
+        typeUserId: process.env.USER_TYPE ?? "",
       },
     });
     
