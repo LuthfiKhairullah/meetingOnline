@@ -3,21 +3,21 @@ import prisma from "@/lib/prisma";
 import { errorResponse, successResponse } from "@/lib/response";
 
 export async function POST(req: Request) {
-  try {
-    const userId = req.headers.get("x-user-id")!;
-    const types: string[] = JSON.parse(
-      req.headers.get("x-user-type") || "[]"
-    );
-    if(!types.includes(process.env.USER_TYPE ?? '')) {
-      return errorResponse("User not verified", 409);
-    }
-  
-    const permissions: string[] = JSON.parse(
-      req.headers.get("x-user-permissions") || "[]"
-    );
-  
-    requirePermission(permissions, ["schedule.store"]);
+  const userId = req.headers.get("x-user-id")!;
+  const types: string[] = JSON.parse(
+    req.headers.get("x-user-type") || "[]"
+  );
+  if(!types.includes(process.env.USER_TYPE ?? '')) {
+    return errorResponse("User not verified", 409);
+  }
 
+  const permissions: string[] = JSON.parse(
+    req.headers.get("x-user-permissions") || "[]"
+  );
+
+  requirePermission(permissions, ["schedule.store"]);
+
+  try {
     const body = await req.json();
 
     const overlap = await prisma.schedule.findFirst({
@@ -67,20 +67,20 @@ export async function POST(req: Request) {
 }
 
 export async function GET(req: Request) {
+  const types: string[] = JSON.parse(
+    req.headers.get("x-user-type") || "[]"
+  );
+  if(!types.includes(process.env.USER_TYPE ?? '')) {
+    return errorResponse("User not verified", 409);
+  }
+
+  const permissions: string[] = JSON.parse(
+    req.headers.get("x-user-permissions") || "[]"
+  );
+
+  requirePermission(permissions, ["schedule.index"]);
+
   try {
-    const types: string[] = JSON.parse(
-      req.headers.get("x-user-type") || "[]"
-    );
-    if(!types.includes(process.env.USER_TYPE ?? '')) {
-      return errorResponse("User not verified", 409);
-    }
-
-    const permissions: string[] = JSON.parse(
-      req.headers.get("x-user-permissions") || "[]"
-    );
-
-    requirePermission(permissions, ["schedule.index"]);
-
     const schedules = await prisma.schedule.findMany({
       where: { deletedAt: null },
       include: {

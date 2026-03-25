@@ -5,20 +5,21 @@ import { errorResponse, successResponse } from "@/lib/response";
 import { generateNik } from "@/lib/serializers/nik.serializer";
 
 export async function PUT(req: Request, context: { params: Promise<{ id: string }> }) {
+  const types: string[] = JSON.parse(
+    req.headers.get("x-user-type") || "[]"
+  );
+  if(!types.includes(process.env.USER_TYPE ?? '')) {
+    return errorResponse("User not verified", 409);
+  }
+
+  const permissions: string[] = JSON.parse(
+    req.headers.get("x-user-permissions") || "[]"
+  );
+
+  requirePermission(permissions, ["users.activateUser"]);
+  
   try {
     const { id } = await context.params;
-    const types: string[] = JSON.parse(
-      req.headers.get("x-user-type") || "[]"
-    );
-    if(!types.includes(process.env.USER_TYPE ?? '')) {
-      return errorResponse("User not verified", 409);
-    }
-  
-    const permissions: string[] = JSON.parse(
-      req.headers.get("x-user-permissions") || "[]"
-    );
-  
-    requirePermission(permissions, ["users.activateUser"]);
     const nik = await generateNik();
     
     await prisma.user.update({

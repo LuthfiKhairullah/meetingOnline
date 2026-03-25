@@ -4,20 +4,21 @@ import prisma from "@/lib/prisma";
 import { errorResponse, successResponse } from "@/lib/response";
 
 export async function PUT(req: Request, context: { params: Promise<{ id: string }> }) {
+  const types: string[] = JSON.parse(
+    req.headers.get("x-user-type") || "[]"
+  );
+  if(!types.includes(process.env.USER_TYPE ?? '')) {
+    return errorResponse("User not verified", 409);
+  }
+  
+  const permissions: string[] = JSON.parse(
+    req.headers.get("x-user-permissions") || "[]"
+  );
+  
+  requirePermission(permissions, ["userroles.update"]);
+  
   try {
     const { id } = await context.params;
-    const types: string[] = JSON.parse(
-      req.headers.get("x-user-type") || "[]"
-    );
-    if(!types.includes(process.env.USER_TYPE ?? '')) {
-      return errorResponse("User not verified", 409);
-    }
-
-    const permissions: string[] = JSON.parse(
-      req.headers.get("x-user-permissions") || "[]"
-    );
-    
-    requirePermission(permissions, ["userroles.update"]);
   
     const body = await req.json();
     const userRole = await prisma.userRole.update({
@@ -48,7 +49,7 @@ export async function DELETE(req: Request, { params }: any) {
     req.headers.get("x-user-type") || "[]"
   );
   
-  if(types.includes(process.env.USER_TYPE ?? '')) {
+  if(!types.includes(process.env.USER_TYPE ?? '')) {
     return errorResponse("User not verified", 409);
   }
   

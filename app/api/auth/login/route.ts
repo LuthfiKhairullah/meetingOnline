@@ -23,6 +23,7 @@ export async function POST(req: Request) {
       },
       include: {
         userActivation: true,
+        roles: true,
       }
     });
   
@@ -31,6 +32,35 @@ export async function POST(req: Request) {
     } else {
       if (user.userActivationId != 3) {
         return errorResponse("User not verified", 401);
+      }
+    }
+
+    const permissionList: String[] = [];
+    const roleList: String[] = [];
+
+    if(user != null) {
+      for (const role of user.roles) {
+        const permission = await prisma.rolePermission.findMany({
+          where: {
+            roleId: role.roleId,
+          },
+          include: {
+            permission: true,
+          }
+        });
+        permission.forEach((permissionRole) => {
+          permissionList.push(permissionRole.permission.code);
+        });
+
+        const roleDetail = await prisma.role.findFirst({
+          where: {
+            id: role.roleId,
+          },
+        });
+        
+        if(roleDetail != null) {
+          roleList.push(roleDetail?.name ?? '');
+        }
       }
     }
     
@@ -64,7 +94,7 @@ export async function POST(req: Request) {
       },
     });
     
-    const showUser = serializeUser(user, user.userActivation.name);
+    const showUser = serializeUser(user, user.userActivation.name, permissionList, roleList);
     
     const notifTitle = 'Login Success';
     const notifMessage = 'Welcome to Apps';

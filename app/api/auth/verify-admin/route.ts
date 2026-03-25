@@ -6,19 +6,20 @@ import { errorResponse, successResponse } from "@/lib/response";
 import { generateNik } from "@/lib/serializers/nik.serializer";
 
 export async function POST(req: Request, { params }: any) {
-  try {
-    const types: string[] = JSON.parse(
-      req.headers.get("x-user-type") || "[]"
-    );
-    if(types.includes(process.env.USER_TYPE ?? '')) {
-      return errorResponse("User not verified", 409);
-    }
-    
-    const permissions: string[] = JSON.parse(
-      req.headers.get("x-user-permissions") || "[]"
-    );
+  const types: string[] = JSON.parse(
+    req.headers.get("x-user-type") || "[]"
+  );
+  if(!types.includes(process.env.USER_TYPE ?? '')) {
+    return errorResponse("User not verified", 409);
+  }
   
-    requirePermission(permissions, ["verify-admin.store"]);
+  const permissions: string[] = JSON.parse(
+    req.headers.get("x-user-permissions") || "[]"
+  );
+
+  requirePermission(permissions, ["verify-admin.store"]);
+  
+  try {
     const body = await req.json();
     
     const decryptId = decryption(body.id);

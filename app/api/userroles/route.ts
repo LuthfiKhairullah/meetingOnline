@@ -3,20 +3,20 @@ import prisma from "@/lib/prisma";
 import { errorResponse, successResponse } from "@/lib/response";
 
 export async function POST(req: Request) {
-  try {
-    const types: string[] = JSON.parse(
-      req.headers.get("x-user-type") || "[]"
-    );
-    if(!types.includes(process.env.USER_TYPE ?? '')) {
-      return errorResponse("User not verified", 409);
-    }
+  const types: string[] = JSON.parse(
+    req.headers.get("x-user-type") || "[]"
+  );
+  if(!types.includes(process.env.USER_TYPE ?? '')) {
+    return errorResponse("User not verified", 409);
+  }
 
-    const permissions: string[] = JSON.parse(
-      req.headers.get("x-user-permissions") || "[]"
-    );
-    
-    requirePermission(permissions, ["userroles.store"]);
+  const permissions: string[] = JSON.parse(
+    req.headers.get("x-user-permissions") || "[]"
+  );
   
+  requirePermission(permissions, ["userroles.store"]);
+
+  try {
     const body = await req.json();
   
     const userRole = await prisma.userRole.create({
@@ -33,20 +33,20 @@ export async function POST(req: Request) {
 }
 
 export async function GET(req: Request) {
+  const types: string[] = JSON.parse(
+    req.headers.get("x-user-type") || "[]"
+  );
+  if(!types.includes(process.env.USER_TYPE ?? '')) {
+    return errorResponse("User not verified", 409);
+  }
+
+  const permissions: string[] = JSON.parse(
+    req.headers.get("x-user-permissions") || "[]"
+  );
+
+  requirePermission(permissions, ["userroles.index"]);
+
   try {
-    const types: string[] = JSON.parse(
-      req.headers.get("x-user-type") || "[]"
-    );
-    if(!types.includes(process.env.USER_TYPE ?? '')) {
-      return errorResponse("User not verified", 409);
-    }
-
-    const permissions: string[] = JSON.parse(
-      req.headers.get("x-user-permissions") || "[]"
-    );
-
-    requirePermission(permissions, ["userroles.index"]);
-
     const userRoles = await prisma.userRole.findMany();
 
     return successResponse("Data loaded successfully", userRoles, 200);

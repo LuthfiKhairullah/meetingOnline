@@ -7,31 +7,62 @@ import { serializeUser } from "@/lib/serializers/user.serializer";
 import bcrypt from "bcryptjs";
 
 export async function GET(req: Request, context: { params: Promise<{ id: string }> }) {
+  const types: string[] = JSON.parse(
+    req.headers.get("x-user-type") || "[]"
+  );
+  if(!types.includes(process.env.USER_TYPE ?? '')) {
+    return errorResponse("User not verified", 409);
+  }
+
+  const permissions: string[] = JSON.parse(
+    req.headers.get("x-user-permissions") || "[]"
+  );
+
+  requirePermission(permissions, ["users.index"]);
+
   try {
     const { id } = await context.params;
-    const types: string[] = JSON.parse(
-      req.headers.get("x-user-type") || "[]"
-    );
-    if(!types.includes(process.env.USER_TYPE ?? '')) {
-      return errorResponse("User not verified", 409);
-    }
-  
-    const permissions: string[] = JSON.parse(
-      req.headers.get("x-user-permissions") || "[]"
-    );
-  
-    requirePermission(permissions, ["users.index"]);
     const users = await prisma.user.findFirst({
       where: {
         id: id,
         deletedAt: null
       },
       include: {
-        userActivation: true
+        userActivation: true,
+        roles: true,
       }
     });
+
+    const permissionList: String[] = [];
+    const roleList: String[] = [];
     
-    const showUsers = users != null ? serializeUser(users, users.userActivation.name) : null;
+    if(users != null) {
+      for (const role of users.roles) {
+        const permission = await prisma.rolePermission.findMany({
+          where: {
+            roleId: role.roleId,
+          },
+          include: {
+            permission: true,
+          }
+        });
+        permission.forEach((permissionRole) => {
+          permissionList.push(permissionRole.permission.code);
+        });
+        
+        const roleDetail = await prisma.role.findFirst({
+          where: {
+            id: role.roleId,
+          },
+        });
+  
+        if(roleDetail != null) {
+          roleList.push(roleDetail?.description ?? '');
+        }
+      }
+    }
+    
+    const showUsers = users != null ? serializeUser(users, users.userActivation.name, permissionList, roleList) : null;
 
     return successResponse("Data loaded successfully", showUsers, 200);
   } catch (error: any) {
@@ -41,21 +72,22 @@ export async function GET(req: Request, context: { params: Promise<{ id: string 
 
 
 export async function PUT(req: Request, context: { params: Promise<{ id: string }> }) {
+  const types: string[] = JSON.parse(
+    req.headers.get("x-user-type") || "[]"
+  );
+  if(!types.includes(process.env.USER_TYPE ?? '')) {
+    return errorResponse("User not verified", 409);
+  }
+
+  const permissions: string[] = JSON.parse(
+    req.headers.get("x-user-permissions") || "[]"
+  );
+
+  requirePermission(permissions, ["users.update"]);
+
   try {
     const { id } = await context.params;
   
-    const types: string[] = JSON.parse(
-      req.headers.get("x-user-type") || "[]"
-    );
-    if(!types.includes(process.env.USER_TYPE ?? '')) {
-      return errorResponse("User not verified", 409);
-    }
-  
-    const permissions: string[] = JSON.parse(
-      req.headers.get("x-user-permissions") || "[]"
-    );
-  
-    requirePermission(permissions, ["users.update"]);
     const { fullname, username, password, email } = await req.json();
     const usernameValue = username.trim();
     const fullnameValue = fullname.trim();
@@ -139,21 +171,22 @@ export async function PUT(req: Request, context: { params: Promise<{ id: string 
 }
 
 export async function DELETE(req: Request, context: { params: Promise<{ id: string }> }) {
+  const types: string[] = JSON.parse(
+    req.headers.get("x-user-type") || "[]"
+  );
+  
+  if(!types.includes(process.env.USER_TYPE ?? '')) {
+    return errorResponse("User not verified", 409);
+  }
+  
+  const permissions: string[] = JSON.parse(
+    req.headers.get("x-user-permissions") || "[]"
+  );
+
+  requirePermission(permissions, ["users.delete"]);
+
   try {
     const { id } = await context.params;
-    const types: string[] = JSON.parse(
-      req.headers.get("x-user-type") || "[]"
-    );
-    
-    if(types.includes(process.env.USER_TYPE ?? '')) {
-      return errorResponse("User not verified", 409);
-    }
-    
-    const permissions: string[] = JSON.parse(
-      req.headers.get("x-user-permissions") || "[]"
-    );
-  
-    requirePermission(permissions, ["users.delete"]);
     await prisma.user.update({
       where: { id: id },
       data: {

@@ -6,19 +6,20 @@ import { serializeUser } from "@/lib/serializers/user.serializer";
 import bcrypt from "bcryptjs";
 
 export async function POST(req: Request) {
+  const types: string[] = JSON.parse(
+    req.headers.get("x-user-type") || "[]"
+  );
+  if(!types.includes(process.env.USER_TYPE ?? '')) {
+    return errorResponse("User not verified", 409);
+  }
+
+  const permissions: string[] = JSON.parse(
+    req.headers.get("x-user-permissions") || "[]"
+  );
+
+  requirePermission(permissions, ["users.store"]);
+
   try {
-    const types: string[] = JSON.parse(
-      req.headers.get("x-user-type") || "[]"
-    );
-    if(!types.includes(process.env.USER_TYPE ?? '')) {
-      return errorResponse("User not verified", 409);
-    }
-  
-    const permissions: string[] = JSON.parse(
-      req.headers.get("x-user-permissions") || "[]"
-    );
-  
-    requirePermission(permissions, ["users.store"]);
     const { fullname, username, password, email } = await req.json();
 
     if (!fullname || !username || !password) {
@@ -96,14 +97,43 @@ export async function GET(req: Request) {
         deletedAt: null
       },
       include: {
-        userActivation: true
+        userActivation: true,
+        roles: true,
       }
     });
-    
+
     const showUsers: any[] = [];
-    users.forEach(element => {
-      showUsers.push(serializeUser(element, element.userActivation.name));
-    });
+    for (const element of users) {
+      const permissionList: String[] = [];
+      const roleList: String[] = [];
+      for (const role of element.roles) {
+        const permission = await prisma.rolePermission.findMany({
+          where: {
+            roleId: role.roleId,
+          },
+          include: {
+            permission: true,
+          }
+        });
+        permission.forEach((permissionRole) => {
+          permissionList.push(permissionRole.permission.code);
+        });
+        
+        const roleDetail = await prisma.role.findFirst({
+          where: {
+            id: role.roleId,
+          },
+        });
+
+        if(roleDetail != null) {
+          roleList.push(roleDetail?.description ?? '');
+        }
+      }
+      showUsers.push(serializeUser(element, element.userActivation.name, permissionList, roleList));
+    }
+    
+    // users.forEach(element => {
+    // });
 
     return successResponse("Data loaded successfully", showUsers, 200);
   } catch (error: any) {
