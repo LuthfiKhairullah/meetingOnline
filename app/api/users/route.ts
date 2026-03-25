@@ -38,29 +38,33 @@ export async function POST(req: Request) {
       return errorResponse("Username sudah terdaftar", 409);
     }
 
-    const emailHash = hashText(email);
-    
-    const existingEmail = await prisma.user.findFirst({
-      where: { emailHash },
-    });
-    
-    if (existingEmail) {
-      return errorResponse("Email sudah digunakan", 409);
-    }
-
-    const emailEnc = encryption(email);
-    
     const hashedPassword = await bcrypt.hash(password, 10);
 
+    const data: any = {};
+    data.fullname = fullname;
+    data.username = username;
+    data.password = hashedPassword;
+    data.userActivationId = 3;
+
+    if(email != '') {
+      const emailHash = hashText(email);
+      
+      const existingEmail = await prisma.user.findFirst({
+        where: { emailHash },
+      });
+      
+      if (existingEmail) {
+        return errorResponse("Email sudah digunakan", 409);
+      }
+  
+      const emailEnc = encryption(email);
+
+      data.email = emailEnc;
+      data.emailHash = emailHash;
+    }
+
     const user = await prisma.user.create({
-      data: {
-        fullname,
-        username,
-        email: emailEnc,
-        emailHash: emailHash,
-        password: hashedPassword,
-        userActivationId: 3,
-      },
+      data: data,
     });
 
     await prisma.userType.create({
