@@ -1,0 +1,99 @@
+'use client'
+
+import PageBreadcrumb from "@/components/common/PageBreadCrumb";
+import { useEffect, useState } from "react";
+import { useParams, useRouter } from "next/navigation";
+import Input from "@/components/form/input/InputField";
+
+export default function CreateRolePage() {
+  const params = useParams()
+  const router = useRouter()
+
+  const initialForm = () => ({
+    name: '',
+  });
+
+  const [form, setForm] = useState(initialForm);
+  const [saving, setSaving] = useState(false)
+
+  // ✅ Handle change (generic)
+  const handleChange = (key: string, value: any) => {
+    setForm((prev: any) => ({
+      ...prev,
+      [key]: value,
+    }))
+  }
+
+  // ✅ Submit insert
+  const handleSubmit = async () => {
+    try {
+      setSaving(true)
+
+      const payload: any = {}
+      if(!form.name) {
+        alert("Name tidak boleh kosong")
+        return
+      }
+      payload.name = form.name;
+
+      const res = await fetch(`/api/roles`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(payload),
+      })
+
+      const result = await res.json()
+      console.log(result);
+
+      // ✅ cek status response
+      if (res.status < 200 || res.status > 300) {
+        // gagal
+        alert(result.message || "Gagal insert")
+        return
+      }
+
+      alert(result.message || "Berhasil insert!")
+      router.push("/admin/role")
+    } catch (err) {
+      console.error(err)
+      alert("Gagal insert")
+    } finally {
+      setSaving(false)
+    }
+  }
+
+  return (
+    <div>
+      <PageBreadcrumb pageTitle={`Create Role`} />
+
+      <div className="grid grid-cols-1 gap-6 xl:grid-cols-2">
+        <div className="space-y-6">
+          <Input label="Name"
+            defaultValue={form.name || ""}
+            onChange={(e: any) => handleChange("name", e.target.value)}
+          />
+        </div>
+      </div>
+
+      {/* ✅ Submit Button */}
+      <div className="mt-6 flex gap-2">
+        <button
+          onClick={handleSubmit}
+          disabled={saving}
+          className="bg-blue-600 text-white px-4 py-2 rounded"
+        >
+          {saving ? "Saving..." : "Insert"}
+        </button>
+
+        <button
+          onClick={() => router.push("/admin/role")}
+          className="border px-4 py-2 rounded"
+        >
+          Cancel
+        </button>
+      </div>
+    </div>
+  )
+}

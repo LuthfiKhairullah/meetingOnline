@@ -1,0 +1,262 @@
+import { Prisma } from "@/generated/prisma/client";
+import { encryption, hashText } from "@/src/lib/auth/crypto";
+import { requirePermission } from "@/src/lib/auth/requirePermission";
+import prisma from "@/src/lib/prisma";
+import { errorResponse, successResponse } from "@/src/lib/response";
+import { serializeUser } from "@/src/lib/serializers/user.serializer";
+import bcrypt from "bcryptjs";
+
+type UserRole = {
+  id: number;
+  name: string;
+};
+
+export async function GET(req: Request, context: { params: Promise<{ id: string }> }) {
+  // const types: string[] = JSON.parse(
+  //   req.headers.get("x-user-type") || "[]"
+  // );
+  // if(!types.includes(process.env.USER_TYPE ?? '')) {
+  //   return errorResponse("User not verified", 409);
+  // }
+
+  // const permissions: string[] = JSON.parse(
+  //   req.headers.get("x-user-permissions") || "[]"
+  // );
+
+  // requirePermission(permissions, ["users.index"]);
+
+  try {
+    const { id } = await context.params;
+    const users = await prisma.user.findFirst({
+      where: {
+        id: parseInt(id),
+        deletedAt: null
+      },
+      include: {
+        userActivation: true,
+        userRole: true,
+      }
+    });
+
+    const permissionList: String[] = [];
+    const roleList: UserRole[] = [];
+    
+    if(users != null) {
+      for (const role of users.userRole) {
+        const permission = await prisma.rolePermission.findMany({
+          where: {
+            roleId: role.roleId,
+          },
+          include: {
+            permission: true,
+          }
+        });
+        permission.forEach((permissionRole) => {
+          permissionList.push(permissionRole.permission.code);
+        });
+        
+        const roleDetail = await prisma.role.findFirst({
+          where: {
+            id: role.roleId,
+          },
+        });
+  
+        if(roleDetail != null) {
+          roleList.push({
+            id: roleDetail?.id ?? '',
+            name: roleDetail?.name ?? ''
+          });
+        }
+      }
+    }
+    
+    const showUsers = users != null ? serializeUser(users, users.userActivation.name, permissionList, roleList) : null;
+
+    return successResponse("Data loaded successfully", showUsers, 200);
+  } catch (error: any) {
+    return errorResponse(error.message, 409);
+  }
+}
+
+
+export async function PUT(req: Request, context: { params: Promise<{ id: string }> }) {
+  // const types: string[] = JSON.parse(
+  //   req.headers.get("x-user-type") || "[]"
+  // );
+  // if(!types.includes(process.env.USER_TYPE ?? '')) {
+  //   return errorResponse("User not verified", 409);
+  // }
+
+  // const permissions: string[] = JSON.parse(
+  //   req.headers.get("x-user-permissions") || "[]"
+  // );
+
+  // requirePermission(permissions, ["users.update"]);
+
+  try {
+    const { id } = await context.params;
+  
+    const { fullname, username, password, email, noHp, alamat, nik } = await req.json();
+    console.log(fullname);
+    const usernameValue = username.trim();
+    const fullnameValue = fullname.trim();
+    const emailValue = email ? email.trim() : null;
+    const noHpValue = noHp ? noHp.trim() : null;
+    const alamatValue = alamat ? alamat.trim() : null;
+    const nikValue = nik ? nik.trim() : null;
+    console.log(alamat);
+
+    const data: any = {};
+    
+    if (!fullnameValue || !usernameValue) {
+      return errorResponse("Name dan username wajib diisi", 400);
+    }
+    if(fullnameValue) {
+      data.fullname = fullnameValue;
+    }
+
+    if(password) {
+      if (password.length < 6) {
+        return errorResponse("Password minimal 6 karakter", 400);
+      }
+      const hashedPassword = await bcrypt.hash(password, 10);
+      data.password = hashedPassword;
+    }
+
+    const dataUser = await prisma.user.findUnique({
+      where: {
+        id: parseInt(id),
+      },
+    });
+
+    if(!dataUser) {
+      return errorResponse("User tidak ditemukan", 409);
+    }
+
+    if(usernameValue && dataUser.username != usernameValue) {
+      const existingUser = await prisma.user.findUnique({
+        where: {
+          username: usernameValue,
+          NOT: {
+            id: parseInt(id), // exclude user sendiri
+          },
+        },
+      });
+
+      if (existingUser) {
+        return errorResponse("Username sudah terdaftar", 409);
+      }
+
+      data.username = usernameValue;
+    }
+
+    if(emailValue) {
+      const emailHash = hashText(emailValue);
+      
+      const existingEmail = await prisma.user.findFirst({
+        where: { emailHash },
+      });
+      
+      if (existingEmail) {
+        return errorResponse("Email sudah digunakan", 409);
+      }
+  
+      const emailEnc = encryption(emailValue);
+      data.email = emailEnc;
+      data.emailHash = emailHash;
+    }
+
+    if(noHpValue) {
+      const noHpHash = hashText(noHpValue);
+      
+      const existingNoHp = await prisma.user.findFirst({
+        where: { noHp },
+      });
+      
+      if (existingNoHp) {
+        return errorResponse("No Hp sudah digunakan", 409);
+      }
+  
+      const noHpEnc = encryption(noHpValue);
+      data.noHp = noHpValue;
+      data.phoneHash = noHpValue;
+    }
+
+    if(alamatValue) {
+      data.alamat = alamatValue;
+    }
+
+    if(nikValue) {
+      console.log('nikValue');
+      console.log(nikValue);
+      const existingNik = await prisma.user.findFirst({
+        where: { nik: nikValue },
+      });
+      
+      if (existingNik) {
+        return errorResponse("NIK sudah digunakan", 409);
+      }
+      data.nik = nikValue;
+    }
+
+    await prisma.user.update({
+      where: {
+        id: parseInt(id),
+        deletedAt: null
+      },
+      data,
+    });
+    
+    return successResponse("Update User berhasil", null, 201);
+  } catch (error) {
+    if (error instanceof Prisma.PrismaClientKnownRequestError) {
+      switch (error.code) {
+        case "P2025":
+          return errorResponse("User not found", 404);
+        default:
+          return errorResponse(error.message, 400);
+      }
+    }
+    
+    return errorResponse("Internal server error", 500);
+  }
+}
+
+export async function DELETE(req: Request, context: { params: Promise<{ id: string }> }) {
+  const types: string[] = JSON.parse(
+    req.headers.get("x-user-type") || "[]"
+  );
+  
+  if(!types.includes(process.env.USER_TYPE ?? '')) {
+    return errorResponse("User not verified", 409);
+  }
+  
+  const permissions: string[] = JSON.parse(
+    req.headers.get("x-user-permissions") || "[]"
+  );
+
+  requirePermission(permissions, ["users.delete"]);
+
+  try {
+    const { id } = await context.params;
+    await prisma.user.update({
+      where: { id: parseInt(id) },
+      data: {
+        deletedAt: new Date(),
+      }
+    });
+
+    return successResponse("Data deleted successfully", 200);
+  } catch (error) {
+    if (error instanceof Prisma.PrismaClientKnownRequestError) {
+      switch (error.code) {
+        case "P2025":
+          return errorResponse("User not found", 404);
+        default:
+          return errorResponse(error.message, 400);
+      }
+    }
+
+    return errorResponse("Internal server error", 500);
+  }
+}

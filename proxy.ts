@@ -1,14 +1,15 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
-import { verifyJwt } from "@/lib/jwt";
-import { getUserAccess } from "@/lib/auth";
-import { errorResponse, successResponse } from "./lib/response";
+import { verifyJwt } from "@/src/lib/jwt";
+import { getUserAccess } from "@/src/lib/auth";
+import { errorResponse, successResponse } from "@/src/lib/response";
 
 export async function proxy(req: NextRequest) {
   const { pathname } = req.nextUrl;
 
   // ✅ PUBLIC ROUTES
   if (
+    pathname.startsWith("/api/users") ||
     pathname.startsWith("/api/auth/login") ||
     pathname.startsWith("/api/auth/register") ||
     pathname.startsWith("/api/auth/verify-email") ||
@@ -53,5 +54,5 @@ export async function proxy(req: NextRequest) {
 }
 
 export const config = {
-  matcher: ["/api/:path*"],
+  matcher: ["/api/:path*", "/admin/:path*"],
 };
