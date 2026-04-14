@@ -8,6 +8,11 @@ import { serializeUser } from "@/src/lib/serializers/user.serializer";
 import { encryption, generatePublicId, hashText } from "@/src/lib/auth/crypto";
 import admin from "@/src/lib/firebase";
 
+type UserRole = {
+  id: number;
+  name: string;
+};
+
 export async function POST(req: Request) {
   try {
     const { username, password, fcmToken, platform } = await req.json();
@@ -38,7 +43,7 @@ export async function POST(req: Request) {
     }
 
     const permissionList: String[] = [];
-    const roleList: String[] = [];
+    const roleList: UserRole[] = [];
 
     if(user != null) {
       for (const role of user.userRole) {
@@ -61,7 +66,10 @@ export async function POST(req: Request) {
         });
         
         if(roleDetail != null) {
-          roleList.push(roleDetail?.name ?? '');
+          roleList.push({
+            id: roleDetail?.id ?? '',
+            name: roleDetail?.name ?? ''
+          });
         }
       }
     }
