@@ -25,24 +25,31 @@ export async function POST(req: Request) {
   // requirePermission(permissions, ["users.store"]);
 
   try {
-    const { fullname, username, password, email } = await req.json();
+    const { fullname, username, password, alamat, noHp, nik, email } = await req.json();
 
     if (!fullname || !username || !password) {
-      return errorResponse("Name, username, dan password wajib diisi", 400);
+      return errorResponse("Name, username, and password is required", 400);
     }
 
     if (password.length < 6) {
       return errorResponse("Password minimal 6 karakter", 400);
     }
+
+    const usernameValue = username.trim();
+    const fullnameValue = fullname.trim();
     
     const existingUser = await prisma.user.findUnique({
-      where: { username },
+      where: { username: usernameValue },
     });
 
     if (existingUser) {
       return errorResponse("Username sudah terdaftar", 409);
     }
-    console.log(email);
+
+    const emailValue = email ? email.trim() : null;
+    const noHpValue = noHp ? noHp.trim() : null;
+    const alamatValue = alamat ? alamat.trim() : null;
+    const nikValue = nik ? nik.trim() : null;
 
     const hashedPassword = await bcrypt.hash(password, 10);
 
@@ -60,15 +67,15 @@ export async function POST(req: Request) {
       }
     }
     data.publicId = publicId;
-    data.fullname = fullname;
-    data.username = username;
+    data.fullname = fullnameValue;
+    data.username = usernameValue;
     data.password = hashedPassword;
     data.userActivationId = 3;
     data.email = '';
     data.emailHash = '';
 
-    if(email && email != "") {
-      const emailHash = hashText(email);
+    if(emailValue) {
+      const emailHash = hashText(emailValue);
       
       const existingEmail = await prisma.user.findFirst({
         where: { emailHash },
@@ -78,10 +85,35 @@ export async function POST(req: Request) {
         return errorResponse("Email sudah digunakan", 409);
       }
   
-      const emailEnc = encryption(email);
-
+      const emailEnc = encryption(emailValue);
       data.email = emailEnc;
       data.emailHash = emailHash;
+    }
+
+    if(noHpValue) {
+      const existingNoHp = await prisma.user.findFirst({
+        where: { noHp },
+      });
+      
+      if (existingNoHp) {
+        return errorResponse("No Hp sudah digunakan", 409);
+      }
+      data.noHp = noHpValue;
+    }
+
+    if(alamatValue) {
+      data.alamat = alamatValue;
+    }
+
+    if(nikValue) {
+      const existingNik = await prisma.user.findFirst({
+        where: { nik: nikValue },
+      });
+      
+      if (existingNik) {
+        return errorResponse("NIK sudah digunakan", 409);
+      }
+      data.nik = nikValue;
     }
     
     const user = await prisma.user.create({

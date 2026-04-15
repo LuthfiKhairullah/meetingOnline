@@ -20,6 +20,9 @@ export async function GET(req: Request, context: { params: Promise<{ id: string 
 
   try {
     const { id } = await context.params;
+    if(id == '1') {
+      return successResponse("Data not found", null, 404);
+    }
     const showRole = await prisma.role.findFirst({
       where: {
         id: parseInt(id),

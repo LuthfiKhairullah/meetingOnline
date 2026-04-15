@@ -97,14 +97,13 @@ export async function PUT(req: Request, context: { params: Promise<{ id: string 
     const { id } = await context.params;
   
     const { fullname, username, password, email, noHp, alamat, nik } = await req.json();
-    console.log(fullname);
+    
     const usernameValue = username.trim();
     const fullnameValue = fullname.trim();
     const emailValue = email ? email.trim() : null;
     const noHpValue = noHp ? noHp.trim() : null;
     const alamatValue = alamat ? alamat.trim() : null;
     const nikValue = nik ? nik.trim() : null;
-    console.log(alamat);
 
     const data: any = {};
     
@@ -167,8 +166,6 @@ export async function PUT(req: Request, context: { params: Promise<{ id: string 
     }
 
     if(noHpValue) {
-      const noHpHash = hashText(noHpValue);
-      
       const existingNoHp = await prisma.user.findFirst({
         where: { noHp },
       });
@@ -176,10 +173,7 @@ export async function PUT(req: Request, context: { params: Promise<{ id: string 
       if (existingNoHp) {
         return errorResponse("No Hp sudah digunakan", 409);
       }
-  
-      const noHpEnc = encryption(noHpValue);
       data.noHp = noHpValue;
-      data.phoneHash = noHpValue;
     }
 
     if(alamatValue) {

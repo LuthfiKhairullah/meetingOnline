@@ -18,7 +18,6 @@ model User {
   nik                 String?   @db.VarChar(6)
   alamat              String?   @db.Text
   noHp                String?   @db.VarChar(14)
-  phoneHash           String?   @db.VarChar(14)
   otp                 String?
   otpExpired          DateTime?
   userActivationId    Int

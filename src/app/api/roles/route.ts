@@ -27,12 +27,12 @@ export async function POST(req: Request) {
     while (exists) {
       publicId = generatePublicId();
 
-      const userDevice = await prisma.userDevice.findFirst({
+      const role = await prisma.role.findFirst({
         where: { publicId },
         select: { id: true }, // lebih ringan
       });
 
-      exists = !!userDevice;
+      exists = !!role;
     }
   
     const role = await prisma.role.create({

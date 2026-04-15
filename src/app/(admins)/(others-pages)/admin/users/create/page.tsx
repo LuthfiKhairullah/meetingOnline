@@ -39,7 +39,7 @@ export default function CreateUserPage() {
       setSaving(true)
 
       const payload: any = {}
-      if(form.username && form.fullname) {
+      if(!form.username && !form.fullname) {
         alert("Username dan Fullname tidak boleh kosong")
         return
       }
