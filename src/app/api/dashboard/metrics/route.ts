@@ -38,8 +38,6 @@ export async function GET(req: Request) {
     dashboardMetrics.classes = classes;
     dashboardMetrics.teachers = teachers;
 
-    console.log(dashboardMetrics)
-
     return successResponse("Data loaded successfully", dashboardMetrics, 200);
   } catch (error: any) {
     return errorResponse(error.message, 409);

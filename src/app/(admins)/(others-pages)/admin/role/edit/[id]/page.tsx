@@ -7,6 +7,8 @@ import { useParams, useRouter } from "next/navigation";
 import Input from "@/components/form/input/InputField";
 
 export default function EditRolePage() {
+  const token = localStorage.getItem("token");
+
   const params = useParams()
   const router = useRouter()
   const id = params.id as string
@@ -19,7 +21,13 @@ export default function EditRolePage() {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const res = await fetch(`/api/roles/${id}`)
+        const res = await fetch(`/api/roles/${id}`, {
+          headers: {
+            "Content-Type": "application/json",
+            "x-client-type": "web",
+            "authorization": `Bearer ${token}`,
+          },
+        })
         const data = await res.json()
         if(!data.data) {
           alert("Data tidak ditemukan")
@@ -57,6 +65,8 @@ export default function EditRolePage() {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
+          "x-client-type": "web",
+          "authorization": `Bearer ${token}`,
         },
         body: JSON.stringify(payload),
       })

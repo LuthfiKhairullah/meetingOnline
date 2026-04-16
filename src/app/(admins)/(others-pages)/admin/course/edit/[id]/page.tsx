@@ -8,6 +8,8 @@ import Input from "@/components/form/input/InputField";
 import { Metadata } from "next";
 
 export default function EditCoursePage() {
+  const token = localStorage.getItem("token");
+
   const params = useParams()
   const router = useRouter()
   const id = params.id as string
@@ -21,7 +23,13 @@ export default function EditCoursePage() {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const res = await fetch(`/api/course/${id}`)
+        const res = await fetch(`/api/course/${id}`, {
+          headers: {
+            "Content-Type": "application/json",
+            "x-client-type": "web",
+            "authorization": `Bearer ${token}`,
+          },
+        })
         const data = await res.json()
         console.log(data.data)
         setForm(data.data)
@@ -56,6 +64,8 @@ export default function EditCoursePage() {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
+          "x-client-type": "web",
+          "authorization": `Bearer ${token}`,
         },
         body: JSON.stringify(payload),
       })

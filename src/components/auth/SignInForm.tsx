@@ -30,6 +30,7 @@ export default function SignInForm() {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
+          "x-client-type": "web",
         },
         body: JSON.stringify(form),
       });
@@ -42,7 +43,10 @@ export default function SignInForm() {
       }
 
       // contoh: simpan token
-      localStorage.setItem("token", data.token);
+      localStorage.setItem("fullname", data.data.fullname);
+      localStorage.setItem("nik", data.data.nik);
+      localStorage.setItem("userPermission", JSON.stringify(data.data.userPermission));
+      localStorage.setItem("userRole", JSON.stringify(data.data.userRole));
 
       // redirect
       window.location.href = "/";

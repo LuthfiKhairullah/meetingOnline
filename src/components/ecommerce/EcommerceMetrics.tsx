@@ -21,7 +21,12 @@ export const EcommerceMetrics = () => {
   useEffect(() => {
     const fetchMetrics = async () => {
       try {
-        const res = await fetch("/api/dashboard/metrics");
+        const res = await fetch("/api/dashboard/metrics", {
+          headers: {
+            "Content-Type": "application/json",
+            "x-client-type": "web",
+          },
+        });
         const response = await res.json();
         const result = response.data;
         setData(result);

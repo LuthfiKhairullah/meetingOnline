@@ -31,6 +31,8 @@ export default function DataTable<T extends DataType>({
   canDelete = false,
   editUrl,
 }: Props<T>) {
+    const token = localStorage.getItem("token");
+
   const [data, setData] = useState<T[]>([])
   const [page, setPage] = useState(1)
   const [search, setSearch] = useState('')
@@ -54,7 +56,13 @@ export default function DataTable<T extends DataType>({
     try {
       setLoading(true)
       const res = await fetch(
-        `${endpoint}?page=${page}&limit=${limit}&search=${debouncedSearch}`
+        `${endpoint}?page=${page}&limit=${limit}&search=${debouncedSearch}`, {
+          headers: {
+            "Content-Type": "application/json",
+            "x-client-type": "web",
+            "authorization": `Bearer ${token}`,
+          },
+        }
       )
       const json = await res.json()
       setData(json.data ?? [])
@@ -78,6 +86,11 @@ export default function DataTable<T extends DataType>({
 
     await fetch(`${endpoint}/${row.id}`, {
       method: 'DELETE',
+      headers: {
+        "Content-Type": "application/json",
+        "x-client-type": "web",
+        "authorization": `Bearer ${token}`,
+      },
     })
 
     fetchData()

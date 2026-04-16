@@ -1,11 +1,23 @@
 "use client";
 import Image from "next/image";
 import Link from "next/link";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Dropdown } from "../ui/dropdown/Dropdown";
 import { DropdownItem } from "../ui/dropdown/DropdownItem";
 
 export default function UserDropdown() {
+  const [user, setUser] = useState({
+    fullname: "",
+    nik: "",
+  });
+
+  useEffect(() => {
+    const fullname = localStorage.getItem("fullname") ?? "";
+    const nik = localStorage.getItem("nik") ?? "";
+
+    setUser({ fullname, nik });
+  }, []);
+
   const [isOpen, setIsOpen] = useState(false);
 
 function toggleDropdown(e: React.MouseEvent<HTMLButtonElement, MouseEvent>) {
@@ -31,7 +43,7 @@ function toggleDropdown(e: React.MouseEvent<HTMLButtonElement, MouseEvent>) {
           />
         </span>
 
-        <span className="block mr-1 font-medium text-theme-sm">Luthfi Khairullah</span>
+        <span className="block mr-1 font-medium text-theme-sm">{user.fullname}</span>
 
         <svg
           className={`stroke-gray-500 dark:stroke-gray-400 transition-transform duration-200 ${
@@ -60,10 +72,10 @@ function toggleDropdown(e: React.MouseEvent<HTMLButtonElement, MouseEvent>) {
       >
         <div>
           <span className="block font-medium text-gray-700 text-theme-sm dark:text-gray-400">
-            Luthfi Khairullah
+            {user.fullname}
           </span>
           <span className="mt-0.5 block text-theme-xs text-gray-500 dark:text-gray-400">
-            luthfi@gmail.com
+            {user.nik}
           </span>
         </div>
 

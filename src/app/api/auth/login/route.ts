@@ -31,8 +31,6 @@ export async function POST(req: Request) {
         userRole: true,
       }
     });
-
-    console.log(user);
   
     if (!user) {
       return errorResponse("Username atau password salah", 401);
@@ -151,9 +149,21 @@ export async function POST(req: Request) {
         },
       });
     }
+
+    const clientType = req.headers.get("x-client-type");
+
+    const response = successLoginResponse("Login berhasil", token, authUserResponse(encryption(userDevice.publicId), refreshToken, token, showUser), 201);
+    if(clientType == 'web') {
+      response.cookies.set("token", token, {
+        httpOnly: true,     // tidak bisa diakses JS (AMAN)
+        secure: false,       // hanya https (production)
+        sameSite: "strict", // anti CSRF
+        path: "/",
+        maxAge: 60 * 60 * 24, // 1 hari
+      });
+    }
   
-  
-    return successLoginResponse("Login berhasil", token, authUserResponse(encryption(userDevice.publicId), refreshToken, token, showUser), 201);
+    return response;
   } catch (error: any) {
     console.log(error);
     return errorResponse(error.message, 409);

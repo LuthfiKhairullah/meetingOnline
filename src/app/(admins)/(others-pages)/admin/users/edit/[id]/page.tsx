@@ -18,6 +18,8 @@ import Input from "@/components/form/input/InputField";
 import Link from "next/link";
 
 export default function EditUserPage() {
+  const token = localStorage.getItem("token");
+
   const params = useParams()
   const router = useRouter()
   const id = params.id as string
@@ -31,7 +33,13 @@ export default function EditUserPage() {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const res = await fetch(`/api/users/${id}`)
+        const res = await fetch(`/api/users/${id}`, {
+          headers: {
+            "Content-Type": "application/json",
+            "x-client-type": "web",
+            "authorization": `Bearer ${token}`,
+          },
+        })
         const data = await res.json()
         console.log(data.data)
         setForm(data.data)
@@ -82,12 +90,13 @@ export default function EditUserPage() {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
+          "x-client-type": "web",
+          "authorization": `Bearer ${token}`,
         },
         body: JSON.stringify(payload),
       })
 
       const result = await res.json()
-      console.log(result);
 
       // ✅ cek status response
       if (res.status < 200 || res.status > 300) {

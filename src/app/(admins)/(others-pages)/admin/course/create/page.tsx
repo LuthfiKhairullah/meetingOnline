@@ -6,6 +6,8 @@ import { useParams, useRouter } from "next/navigation";
 import Input from "@/components/form/input/InputField";
 
 export default function CreateCoursePage() {
+  const token = localStorage.getItem("token");
+
   const params = useParams()
   const router = useRouter()
 
@@ -40,6 +42,8 @@ export default function CreateCoursePage() {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
+          "x-client-type": "web",
+          "authorization": `Bearer ${token}`,
         },
         body: JSON.stringify(payload),
       })

@@ -11,6 +11,7 @@ type Teacher = {
 };
 
 export default function EditTeacherPage() {
+  const token = localStorage.getItem("token");
   const params = useParams()
   const id = params.id as string
   const [available, setAvailable] = useState<Teacher[]>([]);
@@ -20,8 +21,20 @@ export default function EditTeacherPage() {
   useEffect(() => {
     const fetchData = async () => {
       const [resTeacher, resUser] = await Promise.all([
-        fetch("/api/class"),
-        fetch("/api/teacher/show/" + id),
+        fetch("/api/class", {
+          headers: {
+            "Content-Type": "application/json",
+            "x-client-type": "web",
+            "authorization": `Bearer ${token}`,
+          },
+        }),
+        fetch("/api/teacher/show/" + id, {
+          headers: {
+            "Content-Type": "application/json",
+            "x-client-type": "web",
+            "authorization": `Bearer ${token}`,
+          },
+        }),
       ]);
 
       const resTeachers = await resTeacher.json();
@@ -70,6 +83,11 @@ export default function EditTeacherPage() {
           onMoveRight={async (items) => {
             await fetch("/api/teacher/assign/" + user.id, {
               method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+                "x-client-type": "web",
+                "authorization": `Bearer ${token}`,
+              },
               body: JSON.stringify({
                 ids: items.map((i) => i.id),
               }),
@@ -78,6 +96,11 @@ export default function EditTeacherPage() {
           onMoveLeft={async (items) => {
             await fetch("/api/teacher/unassign/" + user.id, {
               method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+                "x-client-type": "web",
+                "authorization": `Bearer ${token}`,
+              },
               body: JSON.stringify({
                 ids: items.map((i) => i.id),
               }),

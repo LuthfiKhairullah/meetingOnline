@@ -9,14 +9,28 @@ type Course = {
 };
 
 export default function DualListAssign() {
+  const token = localStorage.getItem("token");
+
   const [available, setAvailable] = useState<Course[]>([]);
   const [assigned, setAssigned] = useState<Course[]>([]);
 
   useEffect(() => {
     const fetchData = async () => {
       const [resCourse, resTeacher] = await Promise.all([
-        fetch("/api/course"),
-        fetch("/api/teacher/1"),
+        fetch("/api/course", {
+          headers: {
+            "Content-Type": "application/json",
+            "x-client-type": "web",
+            "authorization": `Bearer ${token}`,
+          },
+        }),
+        fetch("/api/teacher/1", {
+          headers: {
+            "Content-Type": "application/json",
+            "x-client-type": "web",
+            "authorization": `Bearer ${token}`,
+          },
+        }),
       ]);
 
       const resCourses = await resCourse.json();

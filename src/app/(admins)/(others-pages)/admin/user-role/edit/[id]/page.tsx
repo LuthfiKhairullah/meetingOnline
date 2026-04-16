@@ -7,6 +7,8 @@ import { useParams, useRouter } from "next/navigation";
 import Input from "@/components/form/input/InputField";
 
 export default function EditUserRolesPage() {
+  const token = localStorage.getItem("token");
+
   const params = useParams()
   const router = useRouter()
   const id = params.id as string
@@ -20,7 +22,13 @@ export default function EditUserRolesPage() {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const res = await fetch(`/api/userroles/${id}`)
+        const res = await fetch(`/api/userroles/${id}`, {
+          headers: {
+            "Content-Type": "application/json",
+            "x-client-type": "web",
+            "authorization": `Bearer ${token}`,
+          },
+        })
         const data = await res.json()
         console.log(data.data)
         setForm(data.data)
@@ -55,6 +63,8 @@ export default function EditUserRolesPage() {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
+          "x-client-type": "web",
+          "authorization": `Bearer ${token}`,
         },
         body: JSON.stringify(payload),
       })

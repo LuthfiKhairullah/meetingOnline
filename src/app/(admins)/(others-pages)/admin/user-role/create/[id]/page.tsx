@@ -12,6 +12,8 @@ type UserRole = {
 };
 
 export default function CreateUserRolePage() {
+  const token = localStorage.getItem("token");
+
   const params = useParams()
   const id = params.id as string
   const [available, setAvailable] = useState<UserRole[]>([]);
@@ -21,8 +23,20 @@ export default function CreateUserRolePage() {
   useEffect(() => {
     const fetchData = async () => {
       const [resUserRole, resUser] = await Promise.all([
-        fetch("/api/roles"),
-        fetch("/api/users/" + id),
+        fetch("/api/roles", {
+          headers: {
+            "Content-Type": "application/json",
+            "x-client-type": "web",
+            "authorization": `Bearer ${token}`,
+          },
+        }),
+        fetch("/api/users/" + id, {
+          headers: {
+            "Content-Type": "application/json",
+            "x-client-type": "web",
+            "authorization": `Bearer ${token}`,
+          },
+        }),
       ]);
 
       const resUserRoles = await resUserRole.json();
@@ -58,6 +72,11 @@ export default function CreateUserRolePage() {
           onMoveRight={async (items) => {
             await fetch("/api/userroles/assign/" + user.id, {
               method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+                "x-client-type": "web",
+                "authorization": `Bearer ${token}`,
+              },
               body: JSON.stringify({
                 ids: items.map((i) => i.id),
               }),
@@ -66,6 +85,11 @@ export default function CreateUserRolePage() {
           onMoveLeft={async (items) => {
             await fetch("/api/userroles/unassign/" + user.id, {
               method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+                "x-client-type": "web",
+                "authorization": `Bearer ${token}`,
+              },
               body: JSON.stringify({
                 ids: items.map((i) => i.id),
               }),
