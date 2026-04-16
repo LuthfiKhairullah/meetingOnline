@@ -156,7 +156,7 @@ export async function POST(req: Request) {
     if(clientType == 'web') {
       response.cookies.set("token", token, {
         httpOnly: true,     // tidak bisa diakses JS (AMAN)
-        secure: false,       // hanya https (production)
+        secure: true,       // hanya https (production)
         sameSite: "strict", // anti CSRF
         path: "/",
         maxAge: 60 * 60 * 24, // 1 hari

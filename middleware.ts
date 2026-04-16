@@ -24,10 +24,10 @@ export function middleware(req: NextRequest) {
     return NextResponse.next();
   }
 
-  // ❌ kalau pakai localStorage → ini pasti null
   const token = req.headers.get("authorization");
+  const tokenCookies = req.cookies.get("token")?.value;
 
-  if (!token) {
+  if (!token && !tokenCookies) {
     return NextResponse.redirect(new URL("/login", req.url));
   }
 
