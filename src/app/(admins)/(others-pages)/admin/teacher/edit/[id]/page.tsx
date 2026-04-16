@@ -11,7 +11,12 @@ type Teacher = {
 };
 
 export default function EditTeacherPage() {
-  const token = localStorage.getItem("token");
+  const [token, setToken] = useState<string | null>(null);
+
+  useEffect(() => {
+    const t = localStorage.getItem("token");
+    setToken(t);
+  }, []);
   const params = useParams()
   const id = params.id as string
   const [available, setAvailable] = useState<Teacher[]>([]);

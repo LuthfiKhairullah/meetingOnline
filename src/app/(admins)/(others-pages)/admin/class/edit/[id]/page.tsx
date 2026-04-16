@@ -7,8 +7,13 @@ import { useParams, useRouter } from "next/navigation";
 import Input from "@/components/form/input/InputField";
 
 export default function EditClassPage() {
-  const token = localStorage.getItem("token");
-  
+  const [token, setToken] = useState<string | null>(null);
+
+  useEffect(() => {
+    const t = localStorage.getItem("token");
+    setToken(t);
+  }, []);
+
   const params = useParams()
   const router = useRouter()
   const id = params.id as string

@@ -9,7 +9,12 @@ type Course = {
 };
 
 export default function DualListAssign() {
-  const token = localStorage.getItem("token");
+  const [token, setToken] = useState<string | null>(null);
+
+  useEffect(() => {
+    const t = localStorage.getItem("token");
+    setToken(t);
+  }, []);
 
   const [available, setAvailable] = useState<Course[]>([]);
   const [assigned, setAssigned] = useState<Course[]>([]);
