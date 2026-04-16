@@ -10,6 +10,13 @@ type Metrics = {
 };
 
 export const EcommerceMetrics = () => {
+  const [token, setToken] = useState<string | null>(null);
+
+  useEffect(() => {
+    const t = localStorage.getItem("token");
+    setToken(t);
+  }, []);
+
   const [data, setData] = useState<Metrics>({
     users: 0,
     classes: 0,
@@ -25,6 +32,7 @@ export const EcommerceMetrics = () => {
           headers: {
             "Content-Type": "application/json",
             "x-client-type": "web",
+            "authorization": `Bearer ${token}`,
           },
         });
         const response = await res.json();
