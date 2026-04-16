@@ -31,7 +31,14 @@ export default function DataTable<T extends DataType>({
   canDelete = false,
   editUrl,
 }: Props<T>) {
-    const token = localStorage.getItem("token");
+  const [token, setToken] = useState<string | null>(null);
+
+  useEffect(() => {
+    setLoading(true)
+    const t = localStorage.getItem("token");
+    setToken(t);
+    setLoading(false)
+  }, []);
 
   const [data, setData] = useState<T[]>([])
   const [page, setPage] = useState(1)
