@@ -1,5 +1,5 @@
 import { User } from "@/generated/prisma/client";
-import { decryption, encryption, maskEmail, maskPhone } from "../auth/crypto";
+import { decryption, maskEmail, maskPhone } from "@/src/lib/auth/crypto";
 
 type UserRole = {
   id: number;
