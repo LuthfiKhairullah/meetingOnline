@@ -1,7 +1,7 @@
 import prisma from "@/src/lib/prisma";
 import { errorResponse, successResponse } from "@/src/lib/response";
 
-export async function GET(req: Request) {
+export async function GET(req: Request, context: { params: Promise<{ id: string }> }) {
   // const types: string[] = JSON.parse(
   //   req.headers.get("x-user-type") || "[]"
   // );
@@ -13,22 +13,31 @@ export async function GET(req: Request) {
   //   req.headers.get("x-user-permissions") || "[]"
   // );
 
-  // requirePermission(permissions, ["permissions.index"]);
+  // requirePermission(permissions, ["users.index"]);
 
   try {
-    const showTeacher = await prisma.user.findMany({
+    const { id } = await context.params;
+    const showUser = await prisma.user.findFirst({
       where: {
+        id: parseInt(id),
         userRole: {
           some: {
             role: {
-              name: 'Teacher',
+              name: 'Student',
             },
           },
         },
-      }
+      },
+      include: {
+        courseStudent: {
+          include: {
+            courseTeacher: true,
+          }
+        },
+      },
     });
 
-    return successResponse("Data loaded successfully", showTeacher, 200);
+    return successResponse("Data loaded successfully", showUser, 200);
   } catch (error: any) {
     return errorResponse(error.message, 409);
   }

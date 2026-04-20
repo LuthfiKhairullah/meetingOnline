@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useMemo, useState, useEffect, memo } from "react";
 
 type DualListProps<T> = {
   available: T[];
@@ -11,9 +11,58 @@ type DualListProps<T> = {
   getLabel: (item: T) => string;
   getKey: (item: T) => string | number;
 
-  onMoveRight?: (items: T[]) => Promise<void>; // 🔥 API call
-  onMoveLeft?: (items: T[]) => Promise<void>;  // 🔥 API call
+  onMoveRight?: (items: T[]) => Promise<void>;
+  onMoveLeft?: (items: T[]) => Promise<void>;
 };
+
+// 🔥 COMPONENT DIPISAH + MEMO
+const List = memo(function List<T>({
+  title,
+  items,
+  selected,
+  onToggle,
+  search,
+  setSearch,
+  loading,
+  getKey,
+  getLabel,
+}: any) {
+  return (
+    <div className="w-full bg-white shadow rounded-2xl p-4">
+      <h2 className="font-bold mb-2">{title}</h2>
+
+      <input
+        value={search}
+        onChange={(e) => setSearch(e.target.value)}
+        placeholder="Search (min 2 chars)..."
+        className="border p-2 w-full mb-3 rounded"
+        disabled={loading}
+      />
+
+      <div className="border rounded h-64 overflow-auto">
+        {items.map((item: T) => (
+          <div
+            key={getKey(item)}
+            onClick={() => onToggle(item)}
+            className={`p-2 cursor-pointer ${
+              selected.some((i: T) => getKey(i) === getKey(item))
+                ? "bg-blue-100"
+                : "hover:bg-gray-100"
+            }`}
+          >
+            {getLabel(item)}
+          </div>
+        ))}
+
+        {items.length === 0 && (
+          <div className="p-2 text-gray-400 text-sm text-center">
+            No data
+          </div>
+        )}
+      </div>
+    </div>
+  );
+});
 
 export default function DualList<T>({
   available,
@@ -31,19 +80,36 @@ export default function DualList<T>({
   const [searchLeft, setSearchLeft] = useState("");
   const [searchRight, setSearchRight] = useState("");
 
+  const [debouncedLeft, setDebouncedLeft] = useState("");
+  const [debouncedRight, setDebouncedRight] = useState("");
+
   const [loading, setLoading] = useState(false);
 
+  useEffect(() => {
+    const t = setTimeout(() => setDebouncedLeft(searchLeft), 300);
+    return () => clearTimeout(t);
+  }, [searchLeft]);
+
+  useEffect(() => {
+    const t = setTimeout(() => setDebouncedRight(searchRight), 300);
+    return () => clearTimeout(t);
+  }, [searchRight]);
+
   const filteredLeft = useMemo(() => {
+    if (debouncedLeft.length < 2) return available;
+
     return available.filter((item) =>
-      getLabel(item).toLowerCase().includes(searchLeft.toLowerCase())
+      getLabel(item).toLowerCase().includes(debouncedLeft.toLowerCase())
     );
-  }, [available, searchLeft]);
+  }, [available, debouncedLeft, getLabel]);
 
   const filteredRight = useMemo(() => {
+    if (debouncedRight.length < 2) return assigned;
+
     return assigned.filter((item) =>
-      getLabel(item).toLowerCase().includes(searchRight.toLowerCase())
+      getLabel(item).toLowerCase().includes(debouncedRight.toLowerCase())
     );
-  }, [assigned, searchRight]);
+  }, [assigned, debouncedRight, getLabel]);
 
   const toggle = (item: T, side: "left" | "right") => {
     if (side === "left") {
@@ -66,13 +132,8 @@ export default function DualList<T>({
 
     try {
       setLoading(true);
+      if (onMoveRight) await onMoveRight(selectedLeft);
 
-      // 🔥 CALL API DULU
-      if (onMoveRight) {
-        await onMoveRight(selectedLeft);
-      }
-
-      // 🔄 UPDATE UI
       setAssigned([...assigned, ...selectedLeft]);
       setAvailable(
         available.filter(
@@ -81,9 +142,6 @@ export default function DualList<T>({
       );
 
       setSelectedLeft([]);
-    } catch (err) {
-      console.error("Move Right Error:", err);
-      alert("Gagal update data");
     } finally {
       setLoading(false);
     }
@@ -94,13 +152,8 @@ export default function DualList<T>({
 
     try {
       setLoading(true);
+      if (onMoveLeft) await onMoveLeft(selectedRight);
 
-      // 🔥 CALL API DULU
-      if (onMoveLeft) {
-        await onMoveLeft(selectedRight);
-      }
-
-      // 🔄 UPDATE UI
       setAvailable([...available, ...selectedRight]);
       setAssigned(
         assigned.filter(
@@ -109,50 +162,10 @@ export default function DualList<T>({
       );
 
       setSelectedRight([]);
-    } catch (err) {
-      console.error("Move Left Error:", err);
-      alert("Gagal update data");
     } finally {
       setLoading(false);
     }
   };
-
-  const List = ({
-    title,
-    items,
-    selected,
-    onToggle,
-    search,
-    setSearch,
-  }: any) => (
-    <div className="w-full bg-white shadow rounded-2xl p-4">
-      <h2 className="font-bold mb-2">{title}</h2>
-
-      <input
-        value={search}
-        onChange={(e) => setSearch(e.target.value)}
-        placeholder="Search..."
-        className="border p-2 w-full mb-3 rounded"
-        disabled={loading}
-      />
-
-      <div className="border rounded h-64 overflow-auto">
-        {items.map((item: T) => (
-          <div
-            key={getKey(item)}
-            onClick={() => onToggle(item)}
-            className={`p-2 cursor-pointer ${
-              selected.some((i: T) => getKey(i) === getKey(item))
-                ? "bg-blue-100"
-                : "hover:bg-gray-100"
-            }`}
-          >
-            {getLabel(item)}
-          </div>
-        ))}
-      </div>
-    </div>
-  );
 
   return (
     <div className="grid grid-cols-3 gap-1 items-center">
@@ -163,6 +176,9 @@ export default function DualList<T>({
         onToggle={(item: T) => toggle(item, "left")}
         search={searchLeft}
         setSearch={setSearchLeft}
+        loading={loading}
+        getKey={getKey}
+        getLabel={getLabel}
       />
 
       <div className="flex flex-col gap-2 items-center">
@@ -189,6 +205,9 @@ export default function DualList<T>({
         onToggle={(item: T) => toggle(item, "right")}
         search={searchRight}
         setSearch={setSearchRight}
+        loading={loading}
+        getKey={getKey}
+        getLabel={getLabel}
       />
     </div>
   );

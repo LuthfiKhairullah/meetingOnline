@@ -18,21 +18,14 @@ export async function GET(req: Request, context: { params: Promise<{ id: string 
 
   try {
     const { id } = await context.params;
-    const showUser = await prisma.user.findFirst({
+    const showUser = await prisma.courseTeacher.findFirst({
       where: {
         id: parseInt(id),
-        userRole: {
-          some: {
-            role: {
-              name: 'Teacher',
-            },
-          },
-        },
       },
       include: {
-        teacher: {
+        courseStudent: {
           include: {
-            class: true,
+            user: true
           }
         },
       },

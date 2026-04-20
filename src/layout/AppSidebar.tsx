@@ -67,6 +67,15 @@ const navItems: NavItem[] = [
       { name: "Class", path: "/admin/class", pro: false },
       { name: "Course", path: "/admin/course", pro: false },
       { name: "Teacher", path: "/admin/teacher", pro: false },
+      { name: "Course Teacher", path: "/admin/course-teacher", pro: false },
+      { name: "Course Student", path: "/admin/course-student", pro: false },
+    ],
+  },
+  {
+    name: "Task",
+    icon: <TableIcon />,
+    subItems: [
+      { name: "Task", path: "/admin/task", pro: false },
     ],
   },
   // {

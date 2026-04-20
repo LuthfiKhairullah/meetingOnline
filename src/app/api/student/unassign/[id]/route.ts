@@ -1,7 +1,8 @@
+import { requirePermission } from "@/src/lib/auth/requirePermission";
 import prisma from "@/src/lib/prisma";
 import { errorResponse, successResponse } from "@/src/lib/response";
 
-export async function GET(req: Request) {
+export async function DELETE(req: Request, context: { params: Promise<{ id: string }> }) {
   // const types: string[] = JSON.parse(
   //   req.headers.get("x-user-type") || "[]"
   // );
@@ -12,23 +13,23 @@ export async function GET(req: Request) {
   // const permissions: string[] = JSON.parse(
   //   req.headers.get("x-user-permissions") || "[]"
   // );
-
-  // requirePermission(permissions, ["permissions.index"]);
+  
+  // requirePermission(permissions, ["userroles.store"]);
 
   try {
-    const showTeacher = await prisma.user.findMany({
-      where: {
-        userRole: {
-          some: {
-            role: {
-              name: 'Teacher',
-            },
-          },
-        },
-      }
-    });
+    const { id } = await context.params;
+    const { ids } = await req.json();
 
-    return successResponse("Data loaded successfully", showTeacher, 200);
+    await prisma.courseStudent.deleteMany({
+      where: {
+        id: {
+          in: ids,
+        },
+        userId: parseInt(id),
+      },
+    });
+  
+    return successResponse("Data created successfully", null, 200);
   } catch (error: any) {
     return errorResponse(error.message, 409);
   }

@@ -49,6 +49,7 @@ model User {
 model UserActivation {
   id          Int       @id @default(autoincrement())
   name        String    @db.VarChar(14)
+  deletedAt DateTime?
 
   users       User[]    @relation("UserActivationUserActivationId")
 }
@@ -99,6 +100,7 @@ model Role {
   id          Int   @id @default(autoincrement())
   publicId    String   @unique(map: "Role_publicId_key")
   name        String   @unique(map: "Role_name_key") @db.VarChar(8)
+  deletedAt DateTime?
 
   userRole        UserRole[]        @relation("UserRoleRoleId")
   rolePermission  RolePermission[]  @relation("RolePermissionRoleId")
@@ -216,6 +218,7 @@ model CategoryTask {
   id          Int   @id @default(autoincrement())
   publicId    String   @unique(map: "CategoryTask_publicId_key")
   name        String   @unique @db.VarChar(30)
+  deletedAt DateTime?
 
   notification  Notification[]   @relation("NotificationCategoryTaskId")
   task  Task[]   @relation("TaskCategoryTaskId")
@@ -225,6 +228,7 @@ model Class {
   id          Int   @id @default(autoincrement())
   publicId    String   @unique(map: "Class_publicId_key")
   name        String   @unique @db.VarChar(30)
+  deletedAt   DateTime?
 
   teacher         Teacher[]         @relation("TeacherClassId")
   courseTeacher   CourseTeacher[]   @relation("CourseTeacherClassId")
@@ -234,9 +238,9 @@ model Course {
   id          Int   @id @default(autoincrement())
   publicId    String   @unique(map: "Course_publicId_key")
   name        String   @unique @db.VarChar(30)
+  deletedAt   DateTime?
 
   courseTeacher     CourseTeacher[]   @relation("CourseTeacherCourseId")
-  courseStudent     CourseStudent[]   @relation("CourseStudentCourseId")
 }
 
 model Teacher {
@@ -245,6 +249,8 @@ model Teacher {
   
   classId     Int
   userId      Int
+
+  deletedAt DateTime?
 
   class           Class             @relation("TeacherClassId", fields: [classId], references: [id])
   user            User              @relation("TeacherUserId", fields: [userId], references: [id])
@@ -258,11 +264,13 @@ model CourseTeacher {
   courseId    Int
   teacherId   Int
   classId     Int
+  deletedAt   DateTime?
 
   course      Course    @relation("CourseTeacherCourseId", fields: [courseId], references: [id])
   teacher     Teacher   @relation("CourseTeacherTeacherId", fields: [teacherId], references: [id])
   class       Class     @relation("CourseTeacherClassId", fields: [classId], references: [id])
   task        Task[]    @relation("TaskCourseTeacherId")
+  courseStudent     CourseStudent[]   @relation("CourseStudentCourseTeacherId")
 }
 
 model CourseStudent {
@@ -271,8 +279,9 @@ model CourseStudent {
   
   courseTeacherId   Int
   userId            Int
+  deletedAt   DateTime?
 
-  courseTeacher   Course  @relation("CourseStudentCourseId", fields: [courseTeacherId], references: [id])
+  courseTeacher   CourseTeacher  @relation("CourseStudentCourseTeacherId", fields: [courseTeacherId], references: [id])
   user            User    @relation("CourseStudentUserId", fields: [userId], references: [id])
 }
 
@@ -304,6 +313,7 @@ model Notification {
 model CategoryNotification {
   id          Int   @id @default(autoincrement())
   name        String   @unique @db.VarChar(30)
+  deletedAt   DateTime?
 
   notification   Notification[]   @relation("NotificationCategoryNotificationId")
 }

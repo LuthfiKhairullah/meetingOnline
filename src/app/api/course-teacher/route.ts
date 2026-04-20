@@ -16,19 +16,23 @@ export async function GET(req: Request) {
   // requirePermission(permissions, ["permissions.index"]);
 
   try {
-    const showTeacher = await prisma.user.findMany({
+    const showTeacher = await prisma.teacher.findMany({
       where: {
-        userRole: {
-          some: {
-            role: {
-              name: 'Teacher',
-            },
-          },
-        },
+        deletedAt: null
+      },
+      include: {
+        user: true,
+        class: true,
       }
     });
 
-    return successResponse("Data loaded successfully", showTeacher, 200);
+    const showTeachers = showTeacher.map((t) => ({
+      id: t.id,
+      fullname: t.user?.fullname,
+      className: t.class?.name,
+    }))
+
+    return successResponse("Data loaded successfully", showTeachers, 200);
   } catch (error: any) {
     return errorResponse(error.message, 409);
   }

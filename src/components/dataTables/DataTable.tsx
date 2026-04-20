@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import {
   useReactTable,
   getCoreRowModel,
@@ -31,15 +31,7 @@ export default function DataTable<T extends DataType>({
   canDelete = false,
   editUrl,
 }: Props<T>) {
-  const [token, setToken] = useState<string | null>(null);
-
-  useEffect(() => {
-    setLoading(true)
-    const t = localStorage.getItem("token");
-    setToken(t);
-    setLoading(false)
-  }, []);
-
+  const [token, setToken] = useState<string | null>(null)
   const [data, setData] = useState<T[]>([])
   const [page, setPage] = useState(1)
   const [search, setSearch] = useState('')
@@ -47,31 +39,42 @@ export default function DataTable<T extends DataType>({
   const [total, setTotal] = useState(0)
   const [loading, setLoading] = useState(false)
 
-  const [selectedRow, setSelectedRow] = useState<T | null>(null)
-  const [isEditOpen, setIsEditOpen] = useState(false)
+  // ✅ ambil token sekali
+  useEffect(() => {
+    const t = localStorage.getItem('token')
+    setToken(t)
+  }, [])
 
-  // debounce
+  // ✅ debounce search
   useEffect(() => {
     const timer = setTimeout(() => {
       setDebouncedSearch(search)
       setPage(1)
     }, 300)
+
     return () => clearTimeout(timer)
   }, [search])
 
+  // ✅ fetch data
   const fetchData = async () => {
+    if (!token) return // ⛔ tunggu token
+
     try {
       setLoading(true)
+
       const res = await fetch(
-        `${endpoint}?page=${page}&limit=${limit}&search=${debouncedSearch}`, {
+        `${endpoint}?page=${page}&limit=${limit}&search=${debouncedSearch}`,
+        {
           headers: {
-            "Content-Type": "application/json",
-            "x-client-type": "web",
-            "authorization": `Bearer ${token}`,
+            'Content-Type': 'application/json',
+            'x-client-type': 'web',
+            'Authorization': `Bearer ${token}`,
           },
         }
       )
+
       const json = await res.json()
+
       setData(json.data ?? [])
       setTotal(json.total ?? 0)
     } catch (err) {
@@ -82,28 +85,28 @@ export default function DataTable<T extends DataType>({
     }
   }
 
+  // ✅ dependency lengkap
   useEffect(() => {
     fetchData()
-  }, [page, debouncedSearch])
+  }, [page, debouncedSearch, token])
 
   // ✅ DELETE
   const handleDelete = async (row: T) => {
-    const confirmDelete = confirm('Yakin mau hapus?')
-    if (!confirmDelete) return
+    if (!confirm('Yakin mau hapus?')) return
 
     await fetch(`${endpoint}/${row.id}`, {
       method: 'DELETE',
       headers: {
-        "Content-Type": "application/json",
-        "x-client-type": "web",
-        "authorization": `Bearer ${token}`,
+        'Content-Type': 'application/json',
+        'x-client-type': 'web',
+        Authorization: `Bearer ${token}`,
       },
     })
 
     fetchData()
   }
 
-  // ✅ Action column
+  // ✅ Action column (conditional)
   const actionColumn: ColumnDef<T> = {
     id: 'actions',
     header: 'Actions',
@@ -134,9 +137,15 @@ export default function DataTable<T extends DataType>({
     },
   }
 
+  // ✅ hanya inject action kalau perlu
+  const finalColumns = useMemo(() => {
+    if (!canEdit && !canDelete) return columns
+    return [...columns, actionColumn]
+  }, [columns, canEdit, canDelete])
+
   const table = useReactTable({
     data,
-    columns: [...columns, actionColumn],
+    columns: finalColumns,
     getCoreRowModel: getCoreRowModel(),
   })
 
@@ -172,13 +181,13 @@ export default function DataTable<T extends DataType>({
         <tbody>
           {loading ? (
             <tr>
-              <td colSpan={columns.length + 1} className="text-center">
+              <td colSpan={finalColumns.length} className="text-center">
                 Loading...
               </td>
             </tr>
           ) : table.getRowModel().rows.length === 0 ? (
             <tr>
-              <td colSpan={columns.length + 1} className="text-center">
+              <td colSpan={finalColumns.length} className="text-center">
                 No data
               </td>
             </tr>
@@ -201,15 +210,17 @@ export default function DataTable<T extends DataType>({
 
       {/* Pagination */}
       <div className="mt-4 flex gap-2">
-        <button
-          onClick={() => setPage((p) => Math.max(p - 1, 1))}
-        >
+        <button onClick={() => setPage((p) => Math.max(p - 1, 1))}>
           Prev
         </button>
-        <span>Page {page}</span>
+
+        <span>
+          Page {page} / {totalPages || 1}
+        </span>
+
         <button
           onClick={() => setPage((p) => p + 1)}
-          disabled={page * limit >= total}
+          disabled={page >= totalPages}
         >
           Next
         </button>
