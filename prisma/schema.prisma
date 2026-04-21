@@ -212,7 +212,8 @@ model TaskScore {
   createdAt       DateTime  @default(now())
   updatedAt       DateTime  @updatedAt
   deletedAt       DateTime?
-  revScore        TaskScore                 @relation("TaskScoreRevScoreId", fields: [revScoreId], references: [id])
+  revScores       TaskScore[]               @relation("TaskScoreRevScoreId")
+  revScore        TaskScore?                 @relation("TaskScoreRevScoreId", fields: [revScoreId], references: [id])
   courseStudent   CourseStudent             @relation("TaskScoreCourseStudentId", fields: [courseStudentId], references: [id])
 }
 
@@ -285,6 +286,7 @@ model CourseStudent {
 
   courseTeacher   CourseTeacher  @relation("CourseStudentCourseTeacherId", fields: [courseTeacherId], references: [id])
   user            User    @relation("CourseStudentUserId", fields: [userId], references: [id])
+  taskScore       TaskScore[]    @relation("TaskScoreCourseStudentId")
 }
 
 model Notification {
