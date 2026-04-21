@@ -43,6 +43,7 @@ export default function SignInForm() {
       }
 
       // contoh: simpan token
+      localStorage.setItem("token", data.token);
       localStorage.setItem("fullname", data.data.fullname);
       localStorage.setItem("nik", data.data.nik);
       localStorage.setItem("userPermission", JSON.stringify(data.data.userPermission));

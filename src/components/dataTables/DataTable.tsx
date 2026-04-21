@@ -18,8 +18,10 @@ type Props<T extends DataType> = {
   columns: ColumnDef<T, any>[]
   endpoint: string
   limit?: number
+  canDetail?: boolean
   canEdit?: boolean
   canDelete?: boolean
+  detailUrl?: string
   editUrl?: string
 }
 
@@ -27,8 +29,10 @@ export default function DataTable<T extends DataType>({
   columns,
   endpoint,
   limit = 5,
+  canDetail = false,
   canEdit = false,
   canDelete = false,
+  detailUrl,
   editUrl,
 }: Props<T>) {
   const [token, setToken] = useState<string | null>(null)
@@ -93,13 +97,14 @@ export default function DataTable<T extends DataType>({
   // ✅ DELETE
   const handleDelete = async (row: T) => {
     if (!confirm('Yakin mau hapus?')) return
+    const t = localStorage.getItem('token')
 
     await fetch(`${endpoint}/${row.id}`, {
       method: 'DELETE',
       headers: {
         'Content-Type': 'application/json',
         'x-client-type': 'web',
-        Authorization: `Bearer ${token}`,
+        Authorization: `Bearer ${t}`,
       },
     })
 
@@ -115,6 +120,15 @@ export default function DataTable<T extends DataType>({
 
       return (
         <div className="flex gap-2">
+          {canDetail && detailUrl && (
+            <Link
+              href={`${detailUrl}/${rowData.id}`}
+              className="px-2 py-1 bg-blue-500 text-white rounded"
+            >
+              Detail
+            </Link>
+          )}
+          
           {canEdit && editUrl && (
             <Link
               href={`${editUrl}/${rowData.id}`}

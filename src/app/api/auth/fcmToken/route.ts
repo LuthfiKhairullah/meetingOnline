@@ -17,7 +17,23 @@ export async function POST(req: Request) {
                 deviceId: hashText(deviceId),
             },
             include: {
-                user: true,
+                user: {
+                    include: {
+                        userRole: {
+                            include: {
+                                role: {
+                                    include: {
+                                        rolePermission: {
+                                            include: {
+                                                permission: true,
+                                            }
+                                        },
+                                    }
+                                },
+                            }
+                        },
+                    }
+                },
             }
         });
 
@@ -35,15 +51,36 @@ export async function POST(req: Request) {
             },
         });
 
+        const arrRole = [
+            ...new Set(
+                (storedToken.user?.userRole ?? [])
+                .map((item) => item?.role?.name?.toUpperCase())
+                .filter(Boolean)
+            ),
+        ];
+        
+        const arrPermission = [
+            ...new Set(
+                (storedToken?.user?.userRole ?? [])
+                .flatMap((ur) => ur.role?.rolePermission ?? [])
+                .map((rp) => rp.permission?.code?.toUpperCase())
+                .filter(Boolean)
+            ),
+        ];
+
         const newAccessToken = signJwt({
             id: storedToken.id,
             username: storedToken.user.username,
+            role: arrRole,
+            permsision: arrPermission,
         });
 
         const newRefreshToken = signJwt({
             id: storedToken.id,
             username: storedToken.user.username,
             deviceId: device,
+            role: arrRole,
+            permsision: arrPermission,
         });
 
         const date = new Date();

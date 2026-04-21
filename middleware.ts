@@ -1,3 +1,5 @@
+import { getUserAccess } from "@/lib/auth";
+import { verifyJwt } from "@/lib/jwt";
 import { NextResponse, NextRequest } from "next/server";
 
 const PUBLIC_ROUTES = [
@@ -9,7 +11,7 @@ const PUBLIC_ROUTES = [
   "/api/auth/refresh",
 ];
 
-export function middleware(req: NextRequest) {
+export async function middleware(req: NextRequest) {
   const { pathname } = req.nextUrl;
 
   if (
@@ -17,6 +19,7 @@ export function middleware(req: NextRequest) {
     pathname.startsWith("/images") ||
     pathname.startsWith("/favicon.ico")
   ) {
+    console.log('token');
     return NextResponse.next();
   }
 
@@ -28,9 +31,25 @@ export function middleware(req: NextRequest) {
   const token = req.headers.get("authorization");
   const tokenCookies = req.cookies.get("token")?.value;
 
+  console.log(token);
+  console.log(tokenCookies);
+
   if (!token && !tokenCookies) {
     return NextResponse.redirect(new URL("/login", req.url));
   }
+
+  const { id, username, role, permission } = verifyJwt(token ?? '');
+  console.log(id);
+  console.log(username);
+
+  // const access = await getUserAccess(id);
+
+  const headers = new Headers(req.headers);
+  headers.set("x-user-id", id);
+  headers.set("x-user-roles", JSON.stringify(role));
+  headers.set("x-user-permissions", JSON.stringify(permission));
+  // headers.set("x-user-type", JSON.stringify(access.userTypes));
+  console.log(headers);
 
   return NextResponse.next();
 }

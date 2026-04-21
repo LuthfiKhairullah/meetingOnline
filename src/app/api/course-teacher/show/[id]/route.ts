@@ -18,22 +18,30 @@ export async function GET(req: Request, context: { params: Promise<{ id: string 
 
   try {
     const { id } = await context.params;
-    const showUser = await prisma.teacher.findFirst({
+    const showTeacher = await prisma.courseTeacher.findFirst({
       where: {
+        deletedAt: null,
         id: parseInt(id),
       },
       include: {
-        user: true,
-        class: true,
-        courseTeacher: {
-          include: {
-            course: true,
-          }
+        teacher: {
+            include: {
+                user: true,
+            }
         },
-      },
+        class: true,
+        course: true,
+      }
     });
 
-    return successResponse("Data loaded successfully", showUser, 200);
+    const result = {
+      ...showTeacher,
+      fullname: showTeacher?.teacher?.user?.fullname,
+      className: showTeacher?.class?.name,
+      courseName: showTeacher?.course?.name,
+    };
+
+    return successResponse("Data loaded successfully", result, 200);
   } catch (error: any) {
     return errorResponse(error.message, 409);
   }

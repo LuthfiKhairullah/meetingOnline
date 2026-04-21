@@ -42,6 +42,7 @@ export async function POST(req: Request) {
 
     const permissionList: String[] = [];
     const roleList: UserRole[] = [];
+    const stringRoleList: String[] = [];
 
     if(user != null) {
       for (const role of user.userRole) {
@@ -54,7 +55,7 @@ export async function POST(req: Request) {
           }
         });
         permission.forEach((permissionRole) => {
-          permissionList.push(permissionRole.permission.code);
+          permissionList.push(permissionRole.permission.code.toUpperCase());
         });
 
         const roleDetail = await prisma.role.findFirst({
@@ -68,6 +69,9 @@ export async function POST(req: Request) {
             id: roleDetail?.id ?? '',
             name: roleDetail?.name ?? ''
           });
+          if (!stringRoleList.includes(roleDetail?.name ?? '')) {
+            stringRoleList.push((roleDetail?.name ?? '').toUpperCase());
+          }
         }
       }
     }
@@ -81,12 +85,16 @@ export async function POST(req: Request) {
     const token = signJwt({
       id: user.id,
       username: user.username,
+      role: stringRoleList,
+      permsision: permissionList,
     });
     
     const refreshToken = signJwt({
       id: user.id,
       username: user.username,
       deviceId: fcmToken,
+      role: stringRoleList,
+      permsision: permissionList,
     });
     
     const date = new Date();
