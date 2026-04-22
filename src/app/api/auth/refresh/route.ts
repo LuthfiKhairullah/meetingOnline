@@ -6,7 +6,7 @@ import { errorResponse, successResponse } from "@/src/lib/response";
 export async function POST(req: Request) {
     try {
         const { publicId, platform, refreshToken, device } = await req.json();
-        const { id, username, deviceId  } = verifyJwt(refreshToken);
+        const { id, username, deviceId  } = await verifyJwt(refreshToken);
 
         let publicIdTemp = '';
         let exists = true;
@@ -81,14 +81,14 @@ export async function POST(req: Request) {
             ),
         ];
 
-        const newAccessToken = signJwt({
+        const newAccessToken = await signJwt({
             id: storedToken.id,
             username: storedToken.user.username,
             role: arrRole,
             permsision: arrPermission,
         });
         
-        const newRefreshToken = signJwt({
+        const newRefreshToken = await signJwt({
             id: storedToken.id,
             username: storedToken.user.username,
             deviceId: device,
