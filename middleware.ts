@@ -28,11 +28,10 @@ export async function middleware(req: NextRequest) {
     return NextResponse.next();
   }
   
-  let clientType: string | undefined;
-  clientType = req.headers.get("x-client-type") ?? undefined;
-  if(!clientType) {
-    clientType = req.cookies.get("x-client-type")?.value;
-  }
+  let clientType =
+    req.headers.get('x-client-type') ||
+    req.cookies.get('x-client-type')?.value ||
+    undefined
 
   let token: string | undefined
 
