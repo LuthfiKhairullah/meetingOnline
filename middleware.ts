@@ -27,18 +27,20 @@ export async function middleware(req: NextRequest) {
   if (PUBLIC_ROUTES.some((route) => pathname.startsWith(route))) {
     return NextResponse.next();
   }
-
-  const clientType = req.headers.get("x-client-type")
+  
+  let clientType: string | undefined;
+  clientType = req.headers.get("x-client-type") ?? undefined;
+  if(!clientType) {
+    clientType = req.cookies.get("x-client-type")?.value;
+  }
 
   let token: string | undefined
 
-  if (clientType === "web") {
-    // ambil dari cookies
-    token = req.cookies.get("token")?.value
+  if (clientType == "web") {
+    token = req.cookies.get("token")?.value;
   } else {
-    // ambil dari header Authorization
     const authHeader = req.headers.get("authorization")
-    token = authHeader?.split(" ")[1] // Bearer xxx
+    token = authHeader?.split(" ")[1]
   }
 
   if (!token) {

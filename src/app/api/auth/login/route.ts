@@ -169,6 +169,13 @@ export async function POST(req: Request) {
         path: "/",
         maxAge: 60 * 60 * 24, // 1 hari
       });
+      response.cookies.set("x-client-type", 'web', {
+        httpOnly: true,     // tidak bisa diakses JS (AMAN)
+        secure: true,       // hanya https (production)
+        sameSite: "strict", // anti CSRF
+        path: "/",
+        maxAge: 60 * 60 * 24, // 1 hari
+      });
     }
   
     return response;
