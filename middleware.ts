@@ -28,15 +28,20 @@ export async function middleware(req: NextRequest) {
     return NextResponse.next();
   }
 
-  const token = req.headers.get("authorization");
-  const tokenCookies = req.cookies.get("token")?.value;
+  const clientType = req.headers.get("x-client-type")
 
-  console.log('token')
-  console.log(token)
-  console.log('tokenCookies')
-  console.log(tokenCookies)
+  let token: string | undefined
 
-  if (!token && !tokenCookies) {
+  if (clientType === "web") {
+    // ambil dari cookies
+    token = req.cookies.get("token")?.value
+  } else {
+    // ambil dari header Authorization
+    const authHeader = req.headers.get("authorization")
+    token = authHeader?.split(" ")[1] // Bearer xxx
+  }
+
+  if (!token) {
     return NextResponse.redirect(new URL("/login", req.url));
   }
 
