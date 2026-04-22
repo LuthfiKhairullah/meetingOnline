@@ -46,7 +46,7 @@ export async function middleware(req: NextRequest) {
     return NextResponse.redirect(new URL("/login", req.url));
   }
 
-  const { id, username, role, permission } = verifyJwt(token ?? '');
+  const { id, username, role, permission } = await verifyJwt(token ?? '');
 
   // const access = await getUserAccess(id);
 

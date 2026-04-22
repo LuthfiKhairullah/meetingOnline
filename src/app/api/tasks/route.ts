@@ -10,7 +10,7 @@ export async function POST(req: Request) {
   const thisToken = token?.split('Bearer ')[1];
   console.log(thisToken);
   
-  const { id, username, role, permission } = verifyJwt(thisToken ?? '');
+  const { id, username, role, permission } = await verifyJwt(thisToken ?? '');
   
   const userId = id;
   // const userId = req.headers.get("x-user-id")!;

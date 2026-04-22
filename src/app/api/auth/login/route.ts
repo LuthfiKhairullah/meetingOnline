@@ -82,14 +82,14 @@ export async function POST(req: Request) {
       return errorResponse("Username atau password salah", 401);
     }
     
-    const token = signJwt({
+    const token = await signJwt({
       id: user.id,
       username: user.username,
       role: stringRoleList,
       permsision: permissionList,
     });
     
-    const refreshToken = signJwt({
+    const refreshToken = await signJwt({
       id: user.id,
       username: user.username,
       deviceId: fcmToken,

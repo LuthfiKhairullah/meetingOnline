@@ -30,7 +30,7 @@ export async function proxy(req: NextRequest) {
   }
 
   try {
-    const { id, username } = verifyJwt(token);
+    const { id, username } = await verifyJwt(token);
     console.log(id);
     console.log(username);
 
