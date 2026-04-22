@@ -72,7 +72,7 @@ export default function DataTable<T extends DataType>({
           headers: {
             'Content-Type': 'application/json',
             'x-client-type': 'web',
-            'Authorization': `Bearer ${token}`,
+            'authorization': `Bearer ${token}`,
           },
         }
       )
@@ -104,7 +104,7 @@ export default function DataTable<T extends DataType>({
       headers: {
         'Content-Type': 'application/json',
         'x-client-type': 'web',
-        Authorization: `Bearer ${t}`,
+        'authorization': `Bearer ${t}`,
       },
     })
 

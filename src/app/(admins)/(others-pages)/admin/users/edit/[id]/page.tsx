@@ -36,6 +36,7 @@ export default function EditUserPage() {
 
   // ✅ Fetch data by ID
   useEffect(() => {
+    if (!token) return; 
     const fetchData = async () => {
       try {
         const res = await fetch(`/api/users/${id}`, {
@@ -57,7 +58,7 @@ export default function EditUserPage() {
     }
 
     if (id) fetchData()
-  }, [id])
+  }, [id, token])
 
   // ✅ Handle change (generic)
   const handleChange = (key: string, value: any) => {

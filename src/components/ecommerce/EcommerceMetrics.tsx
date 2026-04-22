@@ -26,6 +26,8 @@ export const EcommerceMetrics = () => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    if (!token) return;
+
     const fetchMetrics = async () => {
       try {
         const res = await fetch("/api/dashboard/metrics", {
@@ -46,7 +48,7 @@ export const EcommerceMetrics = () => {
     };
 
     fetchMetrics();
-  }, []);
+  }, [token]);
 
   return (
     <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 md:gap-6">

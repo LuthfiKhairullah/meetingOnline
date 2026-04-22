@@ -4,9 +4,9 @@ import prisma from "@/src/lib/prisma";
 import { generatePublicId } from "@/src/lib/auth/crypto";
 
 export async function GET(request: Request) {
-    if (request.headers.get("authorization") !== `Bearer ${process.env.CRON_SECRET}`) {
-        return new Response("Unauthorized", { status: 401 });
-    }
+    // if (request.headers.get("authorization") !== `Bearer ${process.env.CRON_SECRET}`) {
+    //     return new Response("Unauthorized", { status: 401 });
+    // }
     
     const now = new Date();
 

@@ -61,7 +61,7 @@ export default function TaskScorePage() {
         headers: {
           "Content-Type": "application/json",
           "x-client-type": "web",
-          "Authorization": `Bearer ${token}`,
+          "authorization": `Bearer ${token}`,
         },
       });
 

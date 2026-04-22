@@ -35,6 +35,7 @@ export default function CreateClassPage() {
   const handleSubmit = async () => {
     try {
       setSaving(true)
+      const t = localStorage.getItem("token");
 
       const payload: any = {}
       if(!form.name) {
@@ -48,13 +49,12 @@ export default function CreateClassPage() {
         headers: {
           "Content-Type": "application/json",
           "x-client-type": "web",
-          "authorization": `Bearer ${token}`,
+          "authorization": `Bearer ${t}`,
         },
         body: JSON.stringify(payload),
       })
 
       const result = await res.json()
-      console.log(result);
 
       // ✅ cek status response
       if (res.status < 200 || res.status > 300) {

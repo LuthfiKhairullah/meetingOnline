@@ -84,6 +84,7 @@ export default function CreateTaskPage() {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
+          "x-client-type": "web",
           "authorization": `Bearer ${token}`,
         },
         body: JSON.stringify(payload),

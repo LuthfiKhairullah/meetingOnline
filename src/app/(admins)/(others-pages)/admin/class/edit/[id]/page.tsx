@@ -24,6 +24,8 @@ export default function EditClassPage() {
 
   // ✅ Fetch data by ID
   useEffect(() => {
+    if (!token) return; 
+
     const fetchData = async () => {
       try {
         const res = await fetch(`/api/class/${id}`, {
@@ -48,7 +50,7 @@ export default function EditClassPage() {
     }
 
     if (id) fetchData()
-  }, [id])
+  }, [id, token])
 
   // ✅ Handle change (generic)
   const handleChange = (key: string, value: any) => {
@@ -70,6 +72,8 @@ export default function EditClassPage() {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
+          "x-client-type": "web",
+          "authorization": `Bearer ${token}`,
         },
         body: JSON.stringify(payload),
       })

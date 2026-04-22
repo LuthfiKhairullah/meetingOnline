@@ -28,6 +28,8 @@ export default function EditCoursePage() {
 
   // ✅ Fetch data by ID
   useEffect(() => {
+    if (!token) return; 
+
     const fetchData = async () => {
       try {
         const res = await fetch(`/api/tasks/${id}`, {
@@ -49,7 +51,7 @@ export default function EditCoursePage() {
     }
 
     if (id) fetchData()
-  }, [id])
+  }, [id, token])
 
   // ✅ Handle change (generic)
   const handleChange = (key: string, value: any) => {

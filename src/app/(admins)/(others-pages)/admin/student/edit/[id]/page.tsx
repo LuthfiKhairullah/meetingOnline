@@ -24,6 +24,8 @@ export default function EditStudentPage() {
   const [user, setUser] = useState<any>({});
 
   useEffect(() => {
+    if (!token) return; 
+
     const fetchData = async () => {
       const [resStudent, resUser] = await Promise.all([
         fetch("/api/student", {
@@ -70,7 +72,7 @@ export default function EditStudentPage() {
     };
 
     fetchData();
-  }, []);
+  }, [id, token]);
 
   return (
     <div>

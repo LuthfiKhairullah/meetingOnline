@@ -26,6 +26,8 @@ export default function CreateUserRolePage() {
   const [user, setUser] = useState<any>({});
 
   useEffect(() => {
+    if (!token) return; 
+
     const fetchData = async () => {
       const [resUserRole, resUser] = await Promise.all([
         fetch("/api/roles", {
@@ -62,7 +64,7 @@ export default function CreateUserRolePage() {
     };
 
     fetchData();
-  }, []);
+  }, [id, token]);
 
   return (
     <div>

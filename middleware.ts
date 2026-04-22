@@ -31,16 +31,11 @@ export async function middleware(req: NextRequest) {
   const token = req.headers.get("authorization");
   const tokenCookies = req.cookies.get("token")?.value;
 
-  console.log(token);
-  console.log(tokenCookies);
-
   if (!token && !tokenCookies) {
     return NextResponse.redirect(new URL("/login", req.url));
   }
 
   const { id, username, role, permission } = verifyJwt(token ?? '');
-  console.log(id);
-  console.log(username);
 
   // const access = await getUserAccess(id);
 

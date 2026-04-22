@@ -24,6 +24,8 @@ export default function EditCourseTeacherPage() {
   const [courseTeacher, setCourseTeacher] = useState<any>({});
 
   useEffect(() => {
+    if (!token) return; 
+
     const fetchData = async () => {
       const [resCourse, resCourseTeacher] = await Promise.all([
         fetch("/api/student", {
@@ -75,7 +77,7 @@ console.log(courseTeachers)
     };
 
     fetchData();
-  }, []);
+  }, [id, token]);
 
   return (
     <div>

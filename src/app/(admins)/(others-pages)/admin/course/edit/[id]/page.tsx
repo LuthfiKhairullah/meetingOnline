@@ -26,6 +26,8 @@ export default function EditCoursePage() {
 
   // ✅ Fetch data by ID
   useEffect(() => {
+    if (!token) return; 
+
     const fetchData = async () => {
       try {
         const res = await fetch(`/api/course/${id}`, {
@@ -47,7 +49,7 @@ export default function EditCoursePage() {
     }
 
     if (id) fetchData()
-  }, [id])
+  }, [id, token])
 
   // ✅ Handle change (generic)
   const handleChange = (key: string, value: any) => {
@@ -76,7 +78,6 @@ export default function EditCoursePage() {
       })
 
       const result = await res.json()
-      console.log(result);
 
       // ✅ cek status response
       if (res.status < 200 || res.status > 300) {

@@ -25,6 +25,7 @@ export default function EditUserRolesPage() {
 
   // ✅ Fetch data by ID
   useEffect(() => {
+    if (!token) return; 
     const fetchData = async () => {
       try {
         const res = await fetch(`/api/userroles/${id}`, {
@@ -46,7 +47,7 @@ export default function EditUserRolesPage() {
     }
 
     if (id) fetchData()
-  }, [id])
+  }, [id, token])
 
   // ✅ Handle change (generic)
   const handleChange = (key: string, value: any) => {

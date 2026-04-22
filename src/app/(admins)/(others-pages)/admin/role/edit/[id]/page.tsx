@@ -24,6 +24,8 @@ export default function EditRolePage() {
 
   // ✅ Fetch data by ID
   useEffect(() => {
+    if (!token) return; 
+
     const fetchData = async () => {
       try {
         const res = await fetch(`/api/roles/${id}`, {
@@ -48,7 +50,7 @@ export default function EditRolePage() {
     }
 
     if (id) fetchData()
-  }, [id])
+  }, [id, token])
 
   // ✅ Handle change (generic)
   const handleChange = (key: string, value: any) => {
@@ -77,7 +79,6 @@ export default function EditRolePage() {
       })
 
       const result = await res.json()
-      console.log(result);
 
       // ✅ cek status response
       if (res.status < 200 || res.status > 300) {

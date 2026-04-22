@@ -54,8 +54,7 @@ export default function CreateCoursePage() {
       })
 
       const result = await res.json()
-      console.log(result);
-
+      
       // ✅ cek status response
       if (res.status < 200 || res.status > 300) {
         // gagal
