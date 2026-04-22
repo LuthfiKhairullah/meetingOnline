@@ -78,6 +78,13 @@ const navItems: NavItem[] = [
       { name: "Task", path: "/admin/task", pro: false },
     ],
   },
+  {
+    name: "Murajaah",
+    icon: <TableIcon />,
+    subItems: [
+      { name: "Murajaah", path: "/admin/murajaah", pro: false },
+    ],
+  },
   // {
   //   name: "Pages",
   //   icon: <PageIcon />,
