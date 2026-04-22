@@ -106,7 +106,7 @@ export async function DELETE(req: Request, context: { params: Promise<{ id: stri
   const thisToken = token?.split('Bearer ')[1];
   console.log(thisToken);
   
-  const { id: userId, username, role, permission } = verifyJwt(thisToken ?? '');
+  const { id: userId, username, role, permission } = await verifyJwt(thisToken ?? '');
   
   // const userId = req.headers.get("x-user-id")!;
   // const types: string[] = JSON.parse(
