@@ -44,13 +44,6 @@ export async function GET(req: Request, context: { params: Promise<{ id: string 
       return errorResponse('Data not found', 409);
     }
 
-    const showTaskScore = await prisma.taskScore.findMany({
-      where: {
-        taskId: parseInt(id),
-        deletedAt: null,
-      },
-    });
-
     const courseName = showCourse.courseTeacher.course.name;
     const className = showCourse.courseTeacher.class.name;
     const teacherName = showCourse.courseTeacher.teacher.user.fullname;

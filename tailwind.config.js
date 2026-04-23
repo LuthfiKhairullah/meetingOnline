@@ -5,6 +5,10 @@ export default {
   ],
   theme: {
     extend: {
+      colors: {
+        primary: '#6C63FF',   // ungu
+        secondary: '#4FACFE', // biru
+      },
       fontFamily: {
         outfit: ['Outfit', 'sans-serif'],
       },

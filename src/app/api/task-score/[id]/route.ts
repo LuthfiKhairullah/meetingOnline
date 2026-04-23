@@ -20,40 +20,63 @@ export async function GET(req: Request, context: { params: Promise<{ id: string 
 
   try {
     const { id } = await context.params;
-    const showCourse = await prisma.task.findFirst({
+    const { searchParams } = new URL(req.url)
+
+    const search = searchParams.get("search") || ""
+
+    const task = await prisma.task.findFirst({
       where: {
         id: parseInt(id),
+        deletedAt: null,
       },
-    });
+      include: {
+        courseTeacher: {
+          include: {
+            courseStudent: {
+              where: {
+                deletedAt: null,
+                user: {
+                  fullname: {
+                    contains: search,
+                    mode: "insensitive",
+                  },
+                },
+              },
+              include: {
+                user: true,
+                taskScore: {
+                  where: {
+                    taskId: parseInt(id),
+                    deletedAt: null,
+                  },
+                },
+              },
+            },
+          },
+        },
+      },
+    })
 
-    if(!showCourse) {
-      return errorResponse('Data not found', 409);
+    if (!task) {
+      return errorResponse("Data not found", 404)
     }
 
-    const startAt = new Date(showCourse.startAt);
-    const endAt = new Date(showCourse.endAt);
+    const allStudents = task.courseTeacher.courseStudent
 
-    const toDatetimeLocal = (date: Date) => {
-      const formatted = new Intl.DateTimeFormat("sv-SE", {
-        timeZone: "Asia/Jakarta",
-        year: "numeric",
-        month: "2-digit",
-        day: "2-digit",
-        hour: "2-digit",
-        minute: "2-digit",
-        hour12: false,
-      }).format(date);
+    // 🔥 mapping ke format table
+    const mapped = allStudents.map((cs) => {
+      const score = cs.taskScore[0] || null
 
-      return formatted.replace(" ", "T");
-    };
+      return {
+        id: cs.id,
+        name: cs.user.fullname,
+        score: score?.score ?? null,
+        doneAt: score?.doneAt ?? null,
+        status: score ? "Submitted" : "Not Submitted",
+      }
+    });
 
-    const result = {
-      ...showCourse,
-      startAt: toDatetimeLocal(startAt),
-      endAt: toDatetimeLocal(endAt),
-    };
-
-    return successResponse("Data loaded successfully", result, 200);
+    return successResponse("Data loaded successfully", mapped, 200);
   } catch (error: any) {
     return errorResponse(error.message, 409);
   }

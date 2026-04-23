@@ -1,24 +1,16 @@
 'use client'
 
-import ComponentCard from "@/components/common/ComponentCard";
 import PageBreadcrumb from "@/components/common/PageBreadCrumb";
 import DataTable from "@/components/dataTables/DataTable";
-import BasicTableOne from "@/components/tables/BasicTableOne";
-import Button from "@/components/ui/button/Button";
-import { Metadata } from "next";
-import Link from "next/link";
 import { useParams } from "next/navigation";
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import DetailView from "../DetailView";
 
 export default function TaskScorePage() {
   const params = useParams()
   const id = params.id as string
-  const user = {
-    role: 'admin', // contoh dari session / auth
-  }
-  const permissions = ['user:update', 'user:delete']
 
+  const permissions = ['user:update', 'user:delete']
   const canEdit = permissions.includes('user:update')
   const canDelete = permissions.includes('user:delete')
 
@@ -41,14 +33,12 @@ export default function TaskScorePage() {
         val ? new Date(val).toLocaleString("id-ID") : "-",
     },
   ];
+
   const columns = [
-    { header: 'Title', accessorKey: 'title' },
-    { header: 'Description', accessorKey: 'description' },
-    { header: 'Teacher', accessorKey: 'teacher' },
-    { header: 'Class', accessorKey: 'class' },
-    { header: 'Course', accessorKey: 'course' },
-    { header: 'Start At', accessorKey: 'startAt' },
-    { header: 'End At', accessorKey: 'endAt' },
+    { header: 'Name', accessorKey: 'name' },
+    { header: 'Score', accessorKey: 'score' },
+    { header: 'Submit At', accessorKey: 'doneAt' },
+    { header: 'Status', accessorKey: 'status' },
   ]
 
   const [taskData, setTaskData] = useState<any>(null);
@@ -72,24 +62,47 @@ export default function TaskScorePage() {
     if (id) fetchData();
   }, [id]);
 
-  if (!taskData) return <div>Loading...</div>;
+  if (!taskData) return <div className="p-6">Loading...</div>;
 
   return (
-    <div>
-      <PageBreadcrumb pageTitle="Task" />
-      <div className="space-y-6">
-        <DetailView data={taskData} fields={fields} />
+    <div className="min-h-screen bg-linear-to-br from-indigo-100 via-purple-100 to-blue-100 p-6">
+      
+      {/* Header */}
+      <div className="mb-6">
+        <PageBreadcrumb pageTitle="Task Detail" />
+      </div>
 
-        <ComponentCard title="">
-          <div className="space-y-6"></div>
-          <DataTable
-            columns={columns}
-            endpoint="/api/task-score"
-            canEdit={canEdit}
-            canDelete={canDelete}
-            editUrl="/admin/taskscore/edit"
-          />
-        </ComponentCard>
+      <div className="space-y-6">
+
+        {/* Detail Card */}
+        <div className="bg-white/80 backdrop-blur rounded-2xl shadow-lg border border-purple-200 p-6">
+          <h2 className="text-xl font-semibold text-purple-700 mb-4">
+            📘 Informasi Task
+          </h2>
+
+          <DetailView data={taskData} fields={fields} />
+        </div>
+
+        {/* Table Card */}
+        <div className="bg-white/80 backdrop-blur rounded-2xl shadow-lg border border-indigo-200 p-6">
+          
+          <div className="flex justify-between items-center mb-4">
+            <h2 className="text-xl font-semibold text-indigo-700">
+              📊 Data Student
+            </h2>
+          </div>
+
+          <div className="rounded-xl overflow-hidden border border-gray-200">
+            <DataTable
+              columns={columns}
+              endpoint={"/api/task-score/" + id}
+              canEdit={canEdit}
+              canDelete={canDelete}
+              editUrl="/admin/taskscore/edit"
+            />
+          </div>
+        </div>
+
       </div>
     </div>
   );

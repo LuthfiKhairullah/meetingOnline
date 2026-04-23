@@ -189,10 +189,13 @@ model Task {
   createdBy     User      @relation("TaskCreatedById", fields: [createdById], references: [id])
   updatedBy     User      @relation("TaskUpdatedById", fields: [updatedById], references: [id])
   deletedBy     User?     @relation("TaskDeletedById", fields: [deletedById], references: [id])
+  tasks         TaskScore[]               @relation("TaskTaskScoreId")
 
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
   deletedAt     DateTime?
+
+  
 
   notification  Notification[]   @relation("NotificationTaskId")
 }
@@ -213,7 +216,8 @@ model TaskScore {
   updatedAt       DateTime  @updatedAt
   deletedAt       DateTime?
   revScores       TaskScore[]               @relation("TaskScoreRevScoreId")
-  revScore        TaskScore?                 @relation("TaskScoreRevScoreId", fields: [revScoreId], references: [id])
+  revScore        TaskScore?                @relation("TaskScoreRevScoreId", fields: [revScoreId], references: [id])
+  task            Task                      @relation("TaskTaskScoreId", fields: [taskId], references: [id])
   courseStudent   CourseStudent             @relation("TaskScoreCourseStudentId", fields: [courseStudentId], references: [id])
 }
 

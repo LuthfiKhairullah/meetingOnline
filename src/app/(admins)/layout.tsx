@@ -32,7 +32,7 @@ export default function AdminLayout({
         {/* Header */}
         <AppHeader />
         {/* Page Content */}
-        <div className="p-4 mx-auto max-w-(--breakpoint-2xl) md:p-6">{children}</div>
+        <div className="min-h-screen bg-linear-to-br from-indigo-100 via-purple-100 to-blue-100 p-6">{children}</div>
       </div>
     </div>
   );
