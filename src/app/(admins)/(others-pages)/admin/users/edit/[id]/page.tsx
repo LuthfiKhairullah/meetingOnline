@@ -126,68 +126,70 @@ export default function EditUserPage() {
   return (
     <div>
       <PageBreadcrumb pageTitle={`Edit User ${form.fullname}`} />
-      <Link
-          href={"/admin/user-role/create/" + form.id}
-        className="px-2 py-1 bg-green-500 text-white rounded"
-      >
-        Update User Role
-      </Link>
-
-      <div className="grid grid-cols-1 gap-6 xl:grid-cols-2">
-        <div className="space-y-6">
-          <Input label="Name"
-            defaultValue={form.fullname || ""}
-            onChange={(e: any) => handleChange("fullname", e.target.value)}
-          />
-        </div>
-        <div className="space-y-6">
-          <Input label="Username"
-            defaultValue={form.username || ""}
-            onChange={(e: any) => handleChange("username", e.target.value)}
-          />
-        </div>
-        <div className="space-y-6">
-          <Input label="Address"
-            defaultValue={form.alamat || ""}
-            onChange={(e: any) => handleChange("alamat", e.target.value)}
-          />
-        </div>
-        <div className="space-y-6">
-          <Input label="Phone Number"
-            defaultValue={form.noHp || ""}
-            onChange={(e: any) => handleChange("noHp", e.target.value)}
-          />
-        </div>
-        <div className="space-y-6">
-          <Input label="Email"
-            defaultValue={form.email || ""}
-            onChange={(e: any) => handleChange("email", e.target.value)}
-          />
-        </div>
-        <div className="space-y-6">
-          <Input label="NIK"
-            defaultValue={form.nik || ""}
-            onChange={(e: any) => handleChange("nik", e.target.value)}
-          />
-        </div>
-      </div>
-
-      {/* ✅ Submit Button */}
-      <div className="mt-6 flex gap-2">
-        <button
-          onClick={handleSubmit}
-          disabled={saving}
-          className="bg-blue-600 text-white px-4 py-2 rounded"
+      <div className="bg-white/80 backdrop-blur rounded-2xl shadow-lg border border-purple-200 p-6">
+        <Link
+            href={"/admin/user-role/create/" + form.id}
+          className="px-2 py-1 bg-green-500 text-white rounded"
         >
-          {saving ? "Saving..." : "Update"}
-        </button>
+          Update User Role
+        </Link>
 
-        <button
-          onClick={() => router.push("/users")}
-          className="border px-4 py-2 rounded"
-        >
-          Cancel
-        </button>
+        <div className="grid grid-cols-1 gap-6 xl:grid-cols-2">
+          <div className="space-y-6">
+            <Input label="Name"
+              defaultValue={form.fullname || ""}
+              onChange={(e: any) => handleChange("fullname", e.target.value)}
+            />
+          </div>
+          <div className="space-y-6">
+            <Input label="Username"
+              defaultValue={form.username || ""}
+              onChange={(e: any) => handleChange("username", e.target.value)}
+            />
+          </div>
+          <div className="space-y-6">
+            <Input label="Address"
+              defaultValue={form.alamat || ""}
+              onChange={(e: any) => handleChange("alamat", e.target.value)}
+            />
+          </div>
+          <div className="space-y-6">
+            <Input label="Phone Number"
+              defaultValue={form.noHp || ""}
+              onChange={(e: any) => handleChange("noHp", e.target.value)}
+            />
+          </div>
+          <div className="space-y-6">
+            <Input label="Email"
+              defaultValue={form.email || ""}
+              onChange={(e: any) => handleChange("email", e.target.value)}
+            />
+          </div>
+          <div className="space-y-6">
+            <Input label="NIK"
+              defaultValue={form.nik || ""}
+              onChange={(e: any) => handleChange("nik", e.target.value)}
+            />
+          </div>
+        </div>
+
+        {/* ✅ Submit Button */}
+        <div className="mt-6 flex gap-2">
+          <button
+            onClick={handleSubmit}
+            disabled={saving}
+            className="bg-blue-600 text-white px-4 py-2 rounded"
+          >
+            {saving ? "Saving..." : "Update"}
+          </button>
+
+          <button
+            onClick={() => router.push("/admin/users")}
+            className="border px-4 py-2 rounded"
+          >
+            Cancel
+          </button>
+        </div>
       </div>
     </div>
   )

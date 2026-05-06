@@ -92,74 +92,75 @@ export default function CreateUserPage() {
   return (
     <div>
       <PageBreadcrumb pageTitle={`Create Class`} />
+      <div className="bg-white/80 backdrop-blur rounded-2xl shadow-lg border border-purple-200 p-6">
+        <div className="grid grid-cols-1 gap-6 xl:grid-cols-2">
+          <div className="space-y-6">
+            <Input label="Name"
+              defaultValue={form.fullname || ""}
+              onChange={(e: any) => handleChange("fullname", e.target.value)}
+            />
+          </div>
+          <div className="space-y-6">
+            <Input label="Username"
+              defaultValue={form.username || ""}
+              onChange={(e: any) => handleChange("username", e.target.value)}
+            />
+          </div>
+          <div className="space-y-6">
+            <Input label="Password" type="password"
+              defaultValue={form.password || ""}
+              onChange={(e: any) => handleChange("password", e.target.value)}
+            />
+          </div>
+          <div className="space-y-6">
+            <Input label="Confirm Password" type="password"
+              defaultValue={form.confirmPassword || ""}
+              onChange={(e: any) => handleChange("confirmPassword", e.target.value)}
+            />
+          </div>
+          <div className="space-y-6">
+            <Input label="Address"
+              defaultValue={form.alamat || ""}
+              onChange={(e: any) => handleChange("alamat", e.target.value)}
+            />
+          </div>
+          <div className="space-y-6">
+            <Input label="Phone Number"
+              defaultValue={form.noHp || ""}
+              onChange={(e: any) => handleChange("noHp", e.target.value)}
+            />
+          </div>
+          <div className="space-y-6">
+            <Input label="Email"
+              defaultValue={form.email || ""}
+              onChange={(e: any) => handleChange("email", e.target.value)}
+            />
+          </div>
+          <div className="space-y-6">
+            <Input label="NIK"
+              defaultValue={form.nik || ""}
+              onChange={(e: any) => handleChange("nik", e.target.value)}
+            />
+          </div>
+        </div>
 
-      <div className="grid grid-cols-1 gap-6 xl:grid-cols-2">
-        <div className="space-y-6">
-          <Input label="Name"
-            defaultValue={form.fullname || ""}
-            onChange={(e: any) => handleChange("fullname", e.target.value)}
-          />
-        </div>
-        <div className="space-y-6">
-          <Input label="Username"
-            defaultValue={form.username || ""}
-            onChange={(e: any) => handleChange("username", e.target.value)}
-          />
-        </div>
-        <div className="space-y-6">
-          <Input label="Password" type="password"
-            defaultValue={form.password || ""}
-            onChange={(e: any) => handleChange("password", e.target.value)}
-          />
-        </div>
-        <div className="space-y-6">
-          <Input label="Confirm Password" type="password"
-            defaultValue={form.confirmPassword || ""}
-            onChange={(e: any) => handleChange("confirmPassword", e.target.value)}
-          />
-        </div>
-        <div className="space-y-6">
-          <Input label="Address"
-            defaultValue={form.alamat || ""}
-            onChange={(e: any) => handleChange("alamat", e.target.value)}
-          />
-        </div>
-        <div className="space-y-6">
-          <Input label="Phone Number"
-            defaultValue={form.noHp || ""}
-            onChange={(e: any) => handleChange("noHp", e.target.value)}
-          />
-        </div>
-        <div className="space-y-6">
-          <Input label="Email"
-            defaultValue={form.email || ""}
-            onChange={(e: any) => handleChange("email", e.target.value)}
-          />
-        </div>
-        <div className="space-y-6">
-          <Input label="NIK"
-            defaultValue={form.nik || ""}
-            onChange={(e: any) => handleChange("nik", e.target.value)}
-          />
-        </div>
-      </div>
+        {/* ✅ Submit Button */}
+        <div className="mt-6 flex gap-2">
+          <button
+            onClick={handleSubmit}
+            disabled={saving}
+            className="bg-blue-600 text-white px-4 py-2 rounded"
+          >
+            {saving ? "Saving..." : "Insert"}
+          </button>
 
-      {/* ✅ Submit Button */}
-      <div className="mt-6 flex gap-2">
-        <button
-          onClick={handleSubmit}
-          disabled={saving}
-          className="bg-blue-600 text-white px-4 py-2 rounded"
-        >
-          {saving ? "Saving..." : "Insert"}
-        </button>
-
-        <button
-          onClick={() => router.push("/users")}
-          className="border px-4 py-2 rounded"
-        >
-          Cancel
-        </button>
+          <button
+            onClick={() => router.push("/users")}
+            className="border px-4 py-2 rounded"
+          >
+            Cancel
+          </button>
+        </div>
       </div>
     </div>
   )

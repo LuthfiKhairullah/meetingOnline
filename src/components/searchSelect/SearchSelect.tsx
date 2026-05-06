@@ -2,6 +2,7 @@
 
 import AsyncSelect from "react-select/async";
 import { useEffect, useState } from "react";
+import Label from "../form/Label";
 
 interface OptionType {
   value: string | number;
@@ -70,7 +71,8 @@ export default function SearchSelect({
 
   return (
     <div className="w-full">
-      <label className="block mb-1 text-sm font-medium">{label}</label>
+      <Label className="text-xl">{label}</Label>
+      {/* <label className="block mb-1 text-sm font-medium">{label}</label> */}
 
       <AsyncSelect
         cacheOptions
@@ -80,6 +82,61 @@ export default function SearchSelect({
         onChange={(val: any) => {
           setSelected(val);
           onChange(val?.value ?? null);
+        }}
+        styles={{
+          control: (base, state) => ({
+            ...base,
+            minHeight: "44px",
+            borderRadius: "0.5rem",
+            backgroundColor: "#ffffff",
+            borderColor: state.isFocused ? "#465fff" : "#d1d5db",
+            boxShadow: state.isFocused
+              ? "0 0 0 3px rgba(70, 95, 255, 0.1)"
+              : "none",
+            "&:hover": {
+              borderColor: "#465fff",
+            },
+            paddingLeft: "4px",
+            paddingRight: "4px",
+          }),
+
+          valueContainer: (base) => ({
+            ...base,
+            padding: "0 8px",
+          }),
+
+          input: (base) => ({
+            ...base,
+            color: "#1f2937",
+          }),
+
+          placeholder: (base) => ({
+            ...base,
+            color: "#9ca3af",
+          }),
+
+          singleValue: (base) => ({
+            ...base,
+            color: "#1f2937",
+          }),
+
+          menu: (base) => ({
+            ...base,
+            borderRadius: "0.5rem",
+            overflow: "hidden",
+            zIndex: 9999,
+          }),
+
+          option: (base, state) => ({
+            ...base,
+            backgroundColor: state.isSelected
+              ? "#465fff"
+              : state.isFocused
+              ? "#eef2ff"
+              : "#ffffff",
+            color: state.isSelected ? "#ffffff" : "#1f2937",
+            cursor: "pointer",
+          }),
         }}
         placeholder={`Pilih ${label}`}
         isClearable

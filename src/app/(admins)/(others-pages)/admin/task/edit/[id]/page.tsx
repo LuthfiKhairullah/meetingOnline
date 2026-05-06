@@ -99,93 +99,107 @@ export default function EditCoursePage() {
   return (
     <div>
       <PageBreadcrumb pageTitle="Create Task" />
+      <div className="bg-white/80 backdrop-blur rounded-2xl shadow-lg border border-purple-200 p-6">
+        <div className="grid grid-cols-1 gap-6 xl:grid-cols-2">
+          
+          <Input
+            label="Title"
+            defaultValue={form.title}
+            onChange={(e: any) => handleChange("title", e.target.value)}
+          />
 
-      <div className="grid grid-cols-1 gap-6 xl:grid-cols-2">
-        
-        <Input
-          label="Title"
-          defaultValue={form.title}
-          onChange={(e: any) => handleChange("title", e.target.value)}
-        />
+          <SearchSelect
+            label="Course Teacher"
+            endpoint="/api/course-teacher/show"
+            value={form.courseTeacherId}
+            onChange={(val) => handleChange("courseTeacherId", val)}
+            getLabel={(item) =>
+              `${item.fullname} - Class: ${item.className} - Course: ${item.courseName}`
+            }
+          />
 
-        <SearchSelect
-          label="Course Teacher"
-          endpoint="/api/course-teacher/show"
-          value={form.courseTeacherId}
-          onChange={(val) => handleChange("courseTeacherId", val)}
-          getLabel={(item) =>
-            `${item.fullname} - Class: ${item.className} - Course: ${item.courseName}`
-          }
-        />
+          <SearchSelect
+            label="Category Task"
+            endpoint="/api/category-task/show"
+            value={form.categoryTaskId}
+            onChange={(val) => handleChange("categoryTaskId", val)}
+            getLabel={(item) => `${item.name}`}
+          />
 
-        <SearchSelect
-          label="Category Task"
-          endpoint="/api/category-task/show"
-          value={form.categoryTaskId}
-          onChange={(val) => handleChange("categoryTaskId", val)}
-          getLabel={(item) => `${item.name}`}
-        />
+          <Input
+            label="Meeting URL"
+            defaultValue={form.meetingUrl}
+            onChange={(e: any) => handleChange("meetingUrl", e.target.value)}
+          />
 
-        <Input
-          label="Meeting URL"
-          defaultValue={form.meetingUrl}
-          onChange={(e: any) => handleChange("meetingUrl", e.target.value)}
-        />
+          <Input
+            label="Location"
+            defaultValue={form.location}
+            onChange={(e: any) => handleChange("location", e.target.value)}
+          />
 
-        <Input
-          label="Location"
-          defaultValue={form.location}
-          onChange={(e: any) => handleChange("location", e.target.value)}
-        />
+          <Input
+            label="Start At"
+            type="datetime-local"
+            defaultValue={form.startAt}
+            onChange={(e: any) => handleChange("startAt", e.target.value)}
+          />
 
-        <Input
-          label="Start At"
-          type="datetime-local"
-          defaultValue={form.startAt}
-          onChange={(e: any) => handleChange("startAt", e.target.value)}
-        />
+          <Input
+            label="End At"
+            type="datetime-local"
+            defaultValue={form.endAt}
+            onChange={(e: any) => handleChange("endAt", e.target.value)}
+          />
 
-        <Input
-          label="End At"
-          type="datetime-local"
-          defaultValue={form.endAt}
-          onChange={(e: any) => handleChange("endAt", e.target.value)}
-        />
+          <Input
+            label="Timezone"
+            defaultValue={form.timezone}
+            onChange={(e: any) => handleChange("timezone", e.target.value)}
+          />
 
-        <Input
-          label="Timezone"
-          defaultValue={form.timezone}
-          onChange={(e: any) => handleChange("timezone", e.target.value)}
-        />
+        </div>
 
-      </div>
+        {/* Description */}
+        <div className="mt-4">
+          <label className="mb-1 block text-xl font-medium text-gray-700">
+            Description
+          </label>
 
-      {/* Description */}
-      <div className="mt-4">
-        <label className="block mb-1">Description</label>
-        <textarea
-          className="w-full border rounded p-2"
-          value={form.description}
-          onChange={(e) => handleChange("description", e.target.value)}
-        />
-      </div>
+          <textarea
+            className="
+              w-full rounded-lg border border-gray-300
+              bg-white px-4 py-3 text-sm text-gray-800
+              shadow-theme-xs placeholder:text-gray-400
+              focus:border-brand-300 focus:outline-hidden
+              focus:ring-3 focus:ring-brand-500/10
+              dark:border-gray-700 dark:bg-white
+              dark:text-gray-900 dark:placeholder:text-gray-400
+            "
+            rows={4}
+            value={form.description}
+            onChange={(e) => handleChange("description", e.target.value)}
+            placeholder="Masukkan description"
+          />
+        </div>
 
-      {/* Buttons */}
-      <div className="mt-6 flex gap-2">
-        <button
-          onClick={handleSubmit}
-          disabled={saving}
-          className="bg-blue-600 text-white px-4 py-2 rounded"
-        >
-          {saving ? "Saving..." : "Insert"}
-        </button>
+        {/* Buttons */}
+        <div className="mt-6 flex gap-2">
+          <button
+            onClick={handleSubmit}
+            disabled={saving}
+            className="bg-blue-600 text-white px-4 py-2 rounded"
+          >
+            {saving ? "Saving..." : "Update"}
+          </button>
 
-        <button
-          onClick={() => router.push("/admin/task")}
-          className="border px-4 py-2 rounded"
-        >
-          Cancel
-        </button>
+          <button
+            onClick={() => router.push("/admin/task")}
+            className="border px-4 py-2 rounded"
+          >
+            Cancel
+          </button>
+        </div>
       </div>
     </div>
   );

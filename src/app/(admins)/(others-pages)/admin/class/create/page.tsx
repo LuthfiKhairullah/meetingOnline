@@ -76,32 +76,33 @@ export default function CreateClassPage() {
   return (
     <div>
       <PageBreadcrumb pageTitle={`Create Class`} />
-
-      <div className="grid grid-cols-1 gap-6 xl:grid-cols-2">
-        <div className="space-y-6">
-          <Input label="Name"
-            defaultValue={form.name || ""}
-            onChange={(e: any) => handleChange("name", e.target.value)}
-          />
+      <div className="bg-white/80 backdrop-blur rounded-2xl shadow-lg border border-purple-200 p-6">
+        <div className="grid grid-cols-1 gap-6 xl:grid-cols-2">
+          <div className="space-y-6">
+            <Input label="Name"
+              defaultValue={form.name || ""}
+              onChange={(e: any) => handleChange("name", e.target.value)}
+            />
+          </div>
         </div>
-      </div>
 
-      {/* ✅ Submit Button */}
-      <div className="mt-6 flex gap-2">
-        <button
-          onClick={handleSubmit}
-          disabled={saving}
-          className="bg-blue-600 text-white px-4 py-2 rounded"
-        >
-          {saving ? "Saving..." : "Insert"}
-        </button>
+        {/* ✅ Submit Button */}
+        <div className="mt-6 flex gap-2">
+          <button
+            onClick={handleSubmit}
+            disabled={saving}
+            className="bg-blue-600 text-white px-4 py-2 rounded"
+          >
+            {saving ? "Saving..." : "Create"}
+          </button>
 
-        <button
-          onClick={() => router.push("/class")}
-          className="border px-4 py-2 rounded"
-        >
-          Cancel
-        </button>
+          <button
+            onClick={() => router.push("/admin/class")}
+            className="border px-4 py-2 rounded"
+          >
+            Cancel
+          </button>
+        </div>
       </div>
     </div>
   )
