@@ -18,19 +18,24 @@ export async function POST(req: Request, context: { params: Promise<{ id: string
 
   try {
     const { id } = await context.params;
-    const { ids } = await req.json();
+    const { ids, classId } = await req.json();
 
     ids.forEach(async (element: number) => {
-      await prisma.teacher.delete({
+      await prisma.courseTeacher.updateMany({
         where: {
-          id: element,
-          userId: parseInt(id),
+          courseId: element,
+          teacherId: parseInt(id),
+          classId: parseInt(classId),
+          deletedAt: null,
+        },
+        data: {
+          deletedAt: new Date(),
         },
       });
     });
   
   
-    return successResponse("Data created successfully", null, 200);
+    return successResponse("Data unassign successfully", null, 200);
   } catch (error: any) {
     return errorResponse(error.message, 409);
   }

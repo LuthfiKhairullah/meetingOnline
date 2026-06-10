@@ -1,8 +1,16 @@
 import { generatePublicId } from "@/src/lib/auth/crypto";
 import { requirePermission } from "@/src/lib/auth/requirePermission";
 import { requireRole } from "@/src/lib/auth/requireRole";
+import { z } from "zod";
 import prisma from "@/src/lib/prisma";
 import { errorResponse, successResponse } from "@/src/lib/response";
+
+const roleSchema = z.object({
+  name: z
+    .string()
+    .min(3, "Nama minimal 3 karakter")
+    .max(8, "Nama maksimal 8 karakter"),
+});
 
 export async function POST(req: Request) {
   // const types: string[] = JSON.parse(
@@ -20,6 +28,12 @@ export async function POST(req: Request) {
 
   try {
     const body = await req.json();
+
+    const result = roleSchema.safeParse(body);
+
+    if (!result.success) {
+      return errorResponse("Error : " + result.error.issues[0].message, 409);
+    }
 
     let publicId = '';
     let exists = true;

@@ -1,107 +1,111 @@
 'use client'
 
 import PageBreadcrumb from "@/components/common/PageBreadCrumb";
-
 import { useEffect, useState } from "react";
-import { useParams, useRouter } from "next/navigation";
+import { useRouter } from "next/navigation";
 import Input from "@/components/form/input/InputField";
-import { Metadata } from "next";
-import SearchDropdown from "@/components/selectSearch/SelectDropdown";
 import SearchSelect from "@/components/searchSelect/SearchSelect";
 
-export default function EditCoursePage() {
+export default function CreateSchedulePage() {
+  const router = useRouter();
+
+  const [mounted, setMounted] = useState(false);
   const [token, setToken] = useState<string | null>(null);
 
   useEffect(() => {
+    setMounted(true);
+
     const t = localStorage.getItem("token");
     setToken(t);
   }, []);
 
-  const params = useParams()
-  const router = useRouter()
-  const id = params.id as string
+  const [form, setForm] = useState({
+    courseTeacherId: "",
+    categoryTaskId: "",
+    title: "",
+    description: "",
+    meetingUrl: "",
+    location: "",
+    startAt: "",
+    endAt: "",
+    timezone: "Asia/Jakarta",
+  });
 
-  const [form, setForm] = useState<any>({})
-  const [originalForm, setOriginalForm] = useState<any>({})
-  const [loading, setLoading] = useState(true)
-  const [saving, setSaving] = useState(false)
+  const [saving, setSaving] = useState(false);
 
-  // ✅ Fetch data by ID
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const res = await fetch(`/api/tasks/${id}`, {
-          headers: {
-            "Content-Type": "application/json",
-            "x-client-type": "web",
-            "authorization": `Bearer ${token}`,
-          },
-        })
-        const data = await res.json()
-        console.log(data.data)
-        setForm(data.data)
-        setOriginalForm(data.data)
-      } catch (err) {
-        console.error(err)
-      } finally {
-        setLoading(false)
-      }
-    }
-
-    if (id) fetchData()
-  }, [id])
-
-  // ✅ Handle change (generic)
   const handleChange = (key: string, value: any) => {
-    setForm((prev: any) => ({
+    setForm((prev) => ({
       ...prev,
       [key]: value,
-    }))
-  }
+    }));
+  };
 
-  // ✅ Submit update
   const handleSubmit = async () => {
     try {
-      setSaving(true)
+      setSaving(true);
 
-      const res = await fetch(`/api/tasks/${id}`, {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-          "x-client-type": "web",
-          "authorization": `Bearer ${token}`,
-        },
-        body: JSON.stringify(form),
-      })
-
-      const result = await res.json()
-      console.log(result);
-
-      // ✅ cek status response
-      if (res.status < 200 || res.status > 300) {
-        // gagal
-        alert(result.message || "Gagal update")
-        return
+      if (!token) {
+        alert("Token tidak ditemukan");
+        return;
       }
 
-      alert(result.message || "Berhasil update!")
-      router.push("/admin/task")
-    } catch (err) {
-      console.error(err)
-      alert("Gagal update")
-    } finally {
-      setSaving(false)
-    }
-  }
+      if (!form.title) {
+        alert("Title tidak boleh kosong");
+        return;
+      }
 
-  if (loading) return <div>Loading...</div>
+      if (!form.startAt || !form.endAt) {
+        alert("Start & End time wajib diisi");
+        return;
+      }
+
+      const payload = {
+        courseTeacherId: Number(form.courseTeacherId),
+        categoryTaskId: Number(form.categoryTaskId),
+        title: form.title,
+        description: form.description,
+        meetingUrl: form.meetingUrl,
+        location: form.location,
+        startAt: new Date(form.startAt),
+        endAt: new Date(form.endAt),
+        timezone: form.timezone,
+      };
+
+      const res = await fetch(`/api/schedule`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify(payload),
+      });
+
+      const result = await res.json();
+
+      if (!res.ok) {
+        alert(result.message || "Gagal insert");
+        return;
+      }
+
+      alert(result.message || "Berhasil insert!");
+      router.push("/admin/schedule");
+    } catch (err) {
+      console.error(err);
+      alert("Gagal insert");
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  // hindari hydration mismatch
+  if (!mounted) return null;
 
   return (
     <div>
-      <PageBreadcrumb pageTitle="Create Task" />
+      <PageBreadcrumb pageTitle="Create Schedule" />
+
       <div className="bg-white/80 backdrop-blur rounded-2xl shadow-lg border border-purple-200 p-6">
         <div className="grid grid-cols-1 gap-6 xl:grid-cols-2">
-          
           <Input
             label="Title"
             defaultValue={form.title}
@@ -111,7 +115,6 @@ export default function EditCoursePage() {
           <SearchSelect
             label="Course Teacher"
             endpoint="/api/course-teacher/show"
-            value={form.courseTeacherId}
             onChange={(val) => handleChange("courseTeacherId", val)}
             getLabel={(item) =>
               `${item.fullname} - Class: ${item.className} - Course: ${item.courseName}`
@@ -119,21 +122,40 @@ export default function EditCoursePage() {
           />
 
           <Input
+            label="Meeting URL"
+            defaultValue={form.meetingUrl}
+            onChange={(e: any) =>
+              handleChange("meetingUrl", e.target.value)
+            }
+          />
+
+          <Input
+            label="Location"
+            defaultValue={form.location}
+            onChange={(e: any) =>
+              handleChange("location", e.target.value)
+            }
+          />
+
+          <Input
             label="Start At"
             type="datetime-local"
             defaultValue={form.startAt}
-            onChange={(e: any) => handleChange("startAt", e.target.value)}
+            onChange={(e: any) =>
+              handleChange("startAt", e.target.value)
+            }
           />
 
           <Input
             label="End At"
             type="datetime-local"
             defaultValue={form.endAt}
-            onChange={(e: any) => handleChange("endAt", e.target.value)}
+            onChange={(e: any) =>
+              handleChange("endAt", e.target.value)
+            }
           />
         </div>
 
-        {/* Description */}
         <div className="mt-4">
           <label className="mb-1 block text-xl font-medium text-gray-700">
             Description
@@ -156,18 +178,17 @@ export default function EditCoursePage() {
           />
         </div>
 
-        {/* Buttons */}
         <div className="mt-6 flex gap-2">
           <button
             onClick={handleSubmit}
             disabled={saving}
             className="bg-blue-600 text-white px-4 py-2 rounded"
           >
-            {saving ? "Saving..." : "Update"}
+            {saving ? "Saving..." : "Create"}
           </button>
 
           <button
-            onClick={() => router.push("/admin/task")}
+            onClick={() => router.push("/admin/schedule")}
             className="border px-4 py-2 rounded"
           >
             Cancel

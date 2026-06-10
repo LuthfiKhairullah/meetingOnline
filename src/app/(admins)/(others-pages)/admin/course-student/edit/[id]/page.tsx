@@ -35,7 +35,7 @@ export default function EditCourseTeacherPage() {
             "authorization": `Bearer ${token}`,
           },
         }),
-        fetch("/api/course-student/show/" + id, {
+        fetch("/api/course-student/assign/" + id, {
           headers: {
             "Content-Type": "application/json",
             "x-client-type": "web",
@@ -81,7 +81,7 @@ console.log(courseTeachers)
 
   return (
     <div>
-      <PageBreadcrumb pageTitle={`Edit Course Teacher ${courseTeacher.user?.fullname} Class : ${courseTeacher.class?.name}`} />
+      <PageBreadcrumb pageTitle={`Edit Course Student ${courseTeacher.teacher?.user?.fullname} Class : ${courseTeacher.class?.name} Course : ${courseTeacher.course?.name}`} />
         <DualList
           available={available}
           assigned={assigned}

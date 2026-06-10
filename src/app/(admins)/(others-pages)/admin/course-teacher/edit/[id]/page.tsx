@@ -35,7 +35,7 @@ export default function EditCourseTeacherPage() {
             "authorization": `Bearer ${token}`,
           },
         }),
-        fetch("/api/course-teacher/show/" + id, {
+        fetch("/api/course-teacher/assign/" + id, {
           headers: {
             "Content-Type": "application/json",
             "x-client-type": "web",
@@ -60,6 +60,7 @@ export default function EditCourseTeacherPage() {
           name: element.course?.name ?? '',
         })
       });
+      console.log(assignedCourseTeachers);
       console.log(courseTeachers)
       
       // 🔥 filter available (yang belum dimiliki courseTeacher)
@@ -79,7 +80,7 @@ export default function EditCourseTeacherPage() {
 
   return (
     <div>
-      <PageBreadcrumb pageTitle={`Edit Course Teacher ${courseTeacher.user?.fullname} Class : ${courseTeacher.class?.name}`} />
+      <PageBreadcrumb pageTitle={`Edit Course Teacher ${courseTeacher.fullname} Class : ${courseTeacher.class?.name}`} />
         <DualList
           available={available}
           assigned={assigned}
@@ -111,7 +112,7 @@ export default function EditCourseTeacherPage() {
               },
               body: JSON.stringify({
                 ids: items.map((i) => i.id),
-                classId: courseTeacher.class?.id
+                classId: courseTeacher.class?.id,
               }),
             });
           }}

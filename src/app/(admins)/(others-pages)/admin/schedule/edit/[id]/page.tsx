@@ -98,7 +98,7 @@ export default function EditCoursePage() {
 
   return (
     <div>
-      <PageBreadcrumb pageTitle="Create Task" />
+      <PageBreadcrumb pageTitle="Create Schedule" />
       <div className="bg-white/80 backdrop-blur rounded-2xl shadow-lg border border-purple-200 p-6">
         <div className="grid grid-cols-1 gap-6 xl:grid-cols-2">
           
@@ -116,6 +116,18 @@ export default function EditCoursePage() {
             getLabel={(item) =>
               `${item.fullname} - Class: ${item.className} - Course: ${item.courseName}`
             }
+          />
+
+          <Input
+            label="Meeting URL"
+            defaultValue={form.meetingUrl}
+            onChange={(e: any) => handleChange("meetingUrl", e.target.value)}
+          />
+
+          <Input
+            label="Location"
+            defaultValue={form.location}
+            onChange={(e: any) => handleChange("location", e.target.value)}
           />
 
           <Input
@@ -167,7 +179,7 @@ export default function EditCoursePage() {
           </button>
 
           <button
-            onClick={() => router.push("/admin/task")}
+            onClick={() => router.push("/admin/schedule")}
             className="border px-4 py-2 rounded"
           >
             Cancel

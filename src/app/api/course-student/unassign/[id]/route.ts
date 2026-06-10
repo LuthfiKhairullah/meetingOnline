@@ -21,11 +21,14 @@ export async function POST(req: Request, context: { params: Promise<{ id: string
     const { ids } = await req.json();
 
     ids.forEach(async (element: number) => {
-      await prisma.teacher.delete({
+      await prisma.courseStudent.updateMany({
         where: {
-          id: element,
-          userId: parseInt(id),
+          userId: element,
+          courseTeacherId: parseInt(id),
         },
+        data: {
+          deletedAt: new Date(),
+        }
       });
     });
   

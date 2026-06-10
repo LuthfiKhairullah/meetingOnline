@@ -99,7 +99,7 @@ export default function DataTable<T extends DataType>({
     if (!confirm('Yakin mau hapus?')) return
     const t = localStorage.getItem('token')
 
-    await fetch(`${endpoint}/${row.id}`, {
+    const response = await fetch(`${endpoint}/${row.id}`, {
       method: 'DELETE',
       headers: {
         'Content-Type': 'application/json',
@@ -108,7 +108,15 @@ export default function DataTable<T extends DataType>({
       },
     })
 
-    fetchData()
+    const result = await response.json();
+    
+    if (result.success) {
+      setData((prev) => prev.filter((item) => item.id !== row.id));
+      setTotal((prev) => prev - 1);
+    } else {
+      alert(result.message ?? "Gagal menghapus data");
+    }
+
   }
 
   // ✅ Action column (conditional)

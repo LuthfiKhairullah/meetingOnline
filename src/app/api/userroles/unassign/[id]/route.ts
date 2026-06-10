@@ -20,13 +20,13 @@ export async function POST(req: Request, context: { params: Promise<{ id: string
     const { id } = await context.params;
     const { ids } = await req.json();
 
-    ids.forEach(async (element: number) => {
-      await prisma.userRole.delete({
-        where: {
-          id: element,
-          userId: parseInt(id),
+    await prisma.userRole.deleteMany({
+      where: {
+        roleId: {
+          in: ids,
         },
-      });
+        userId: parseInt(id),
+      },
     });
   
   

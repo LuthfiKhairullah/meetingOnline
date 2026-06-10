@@ -23,6 +23,13 @@ export async function GET(req: Request, context: { params: Promise<{ id: string 
         id: parseInt(id),
       },
       include: {
+        teacher: {
+          include: {
+            user: true,
+          }
+        },
+        class: true,
+        course: true,
         courseStudent: {
           include: {
             user: true

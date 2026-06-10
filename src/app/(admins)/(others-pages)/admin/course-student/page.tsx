@@ -31,7 +31,7 @@ export default function TeacherPage() {
 
   return (
     <div>
-      <PageBreadcrumb pageTitle="Student" />
+      <PageBreadcrumb pageTitle="Course Student" />
       <div className="space-y-6">
         <ComponentCard title="">
           <Link

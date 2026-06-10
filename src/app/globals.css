@@ -281,8 +281,7 @@
 
 
 
-@layer utilities {
-  /* For Remove Date Icon */
+/* @layer utilities {
   input[type="date"]::-webkit-inner-spin-button,
   input[type="time"]::-webkit-inner-spin-button,
   input[type="date"]::-webkit-calendar-picker-indicator,
@@ -290,7 +289,7 @@
     display: none;
     -webkit-appearance: none;
   }
-}
+} */
 
 /* third-party libraries CSS */
 .apexcharts-legend-text {
@@ -633,11 +632,11 @@ span.flatpickr-weekday,
   @apply min-h-screen;
 }
 
-.input-date-icon::-webkit-inner-spin-button,
+/* .input-date-icon::-webkit-inner-spin-button,
 .input-date-icon::-webkit-calendar-picker-indicator {
   opacity: 0;
   -webkit-appearance: none;
-}
+} */
 
 .stocks-slider-outer .swiper-button-next:after,
 .stocks-slider-outer .swiper-button-prev:after {

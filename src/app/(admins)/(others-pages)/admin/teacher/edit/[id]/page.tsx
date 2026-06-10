@@ -35,7 +35,7 @@ export default function EditTeacherPage() {
             "authorization": `Bearer ${token}`,
           },
         }),
-        fetch("/api/teacher/show/" + id, {
+        fetch("/api/teacher/assign/" + id, {
           headers: {
             "Content-Type": "application/json",
             "x-client-type": "web",

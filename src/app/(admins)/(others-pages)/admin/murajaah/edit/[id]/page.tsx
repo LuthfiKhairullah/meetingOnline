@@ -30,7 +30,7 @@ export default function EditCoursePage() {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const res = await fetch(`/api/tasks/${id}`, {
+        const res = await fetch(`/api/murajaah/${id}`, {
           headers: {
             "Content-Type": "application/json",
             "x-client-type": "web",
@@ -64,7 +64,7 @@ export default function EditCoursePage() {
     try {
       setSaving(true)
 
-      const res = await fetch(`/api/tasks/${id}`, {
+      const res = await fetch(`/api/murajaah/${id}`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
@@ -85,7 +85,7 @@ export default function EditCoursePage() {
       }
 
       alert(result.message || "Berhasil update!")
-      router.push("/admin/task")
+      router.push("/admin/murajaah")
     } catch (err) {
       console.error(err)
       alert("Gagal update")
@@ -98,7 +98,7 @@ export default function EditCoursePage() {
 
   return (
     <div>
-      <PageBreadcrumb pageTitle="Create Task" />
+      <PageBreadcrumb pageTitle="Create Murajaah" />
       <div className="bg-white/80 backdrop-blur rounded-2xl shadow-lg border border-purple-200 p-6">
         <div className="grid grid-cols-1 gap-6 xl:grid-cols-2">
           
@@ -119,40 +119,10 @@ export default function EditCoursePage() {
           />
 
           <Input
-            label="Start At"
-            type="datetime-local"
-            defaultValue={form.startAt}
+            label="Date"
+            type="date"
+            defaultValue={form.startAt?.split("T")[0]}
             onChange={(e: any) => handleChange("startAt", e.target.value)}
-          />
-
-          <Input
-            label="End At"
-            type="datetime-local"
-            defaultValue={form.endAt}
-            onChange={(e: any) => handleChange("endAt", e.target.value)}
-          />
-        </div>
-
-        {/* Description */}
-        <div className="mt-4">
-          <label className="mb-1 block text-xl font-medium text-gray-700">
-            Description
-          </label>
-
-          <textarea
-            className="
-              w-full rounded-lg border border-gray-300
-              bg-white px-4 py-3 text-sm text-gray-800
-              shadow-theme-xs placeholder:text-gray-400
-              focus:border-brand-300 focus:outline-hidden
-              focus:ring-3 focus:ring-brand-500/10
-              dark:border-gray-700 dark:bg-white
-              dark:text-gray-900 dark:placeholder:text-gray-400
-            "
-            rows={4}
-            value={form.description}
-            onChange={(e) => handleChange("description", e.target.value)}
-            placeholder="Masukkan description"
           />
         </div>
 
@@ -167,7 +137,7 @@ export default function EditCoursePage() {
           </button>
 
           <button
-            onClick={() => router.push("/admin/task")}
+            onClick={() => router.push("/admin/murajaah")}
             className="border px-4 py-2 rounded"
           >
             Cancel

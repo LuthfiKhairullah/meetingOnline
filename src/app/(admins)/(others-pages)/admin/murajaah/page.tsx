@@ -8,33 +8,39 @@ import Link from "next/link";
 import React from "react";
 
 export const metadata: Metadata = {
-  title: "Teacher",
+  title: "Murajaah",
   description:
-    "List Teacher",
+    "List Murajaah",
   // other metadata
 };
 
-export default function TeacherPage() {
+export default function MurajaahPage() {
   const user = {
     role: 'admin', // contoh dari session / auth
   }
   const permissions = ['user:update', 'user:delete']
 
+  const canDetail = permissions.includes('user:update')
   const canEdit = permissions.includes('user:update')
   const canDelete = permissions.includes('user:delete')
 
   const columns = [
-    { header: 'Fullname', accessorKey: 'fullname' },
-    { header: 'Class', accessorKey: 'className' },
+    { header: 'Title', accessorKey: 'title' },
+    { header: 'Description', accessorKey: 'description' },
+    { header: 'Teacher', accessorKey: 'teacher' },
+    { header: 'Class', accessorKey: 'class' },
+    { header: 'Course', accessorKey: 'course' },
+    { header: 'Start At', accessorKey: 'startAt' },
+    { header: 'End At', accessorKey: 'endAt' },
   ]
 
   return (
     <div>
-      <PageBreadcrumb pageTitle="Course Teacher" />
+      <PageBreadcrumb pageTitle="Murajaah" />
       <div className="space-y-6">
         <ComponentCard title="">
           <Link
-              href="/admin/teacher"
+              href="/admin/murajaah/create"
             className="px-2 py-1 bg-blue-500 text-white rounded"
           >
             Create
@@ -42,10 +48,12 @@ export default function TeacherPage() {
           <div className="space-y-6"></div>
           <DataTable
             columns={columns}
-            endpoint="/api/course-teacher"
+            endpoint="/api/murajaah"
+            canDetail={canDetail}
             canEdit={canEdit}
             canDelete={canDelete}
-            editUrl="/admin/course-teacher/edit"
+            editUrl="/admin/murajaah/edit"
+            detailUrl="/admin/murajaahscore"
           />
         </ComponentCard>
       </div>

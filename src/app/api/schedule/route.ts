@@ -1,6 +1,5 @@
 import { Prisma } from "@/generated/prisma/client";
 import { verifyJwt } from "@/lib/jwt";
-import { sendNotification } from "@/lib/notification";
 import { generatePublicId } from "@/src/lib/auth/crypto";
 import { requirePermission } from "@/src/lib/auth/requirePermission";
 import prisma from "@/src/lib/prisma";
@@ -57,44 +56,13 @@ export async function POST(req: Request) {
         startAt: new Date(body.startAt),
         endAt: new Date(body.endAt),
         courseTeacherId: body.courseTeacherId,
-        categoryTaskId: 3,
-        meetingUrl: null,
-        location: null,
+        categoryTaskId: 2,
+        meetingUrl: body.meetingUrl,
+        location: body.location,
         revTaskId: body.revTaskId,
         createdById: parseInt(userId),
         updatedById: parseInt(userId),
       },
-      select: {
-        id: true,
-      },
-    });
-
-    const dataCourseStudent = await prisma.courseStudent.findMany({
-      where: {
-        courseTeacherId: body.courseTeacherId,
-        deletedAt: null,
-      },
-      include: {
-        user: {
-          include: {
-            userDevice: true,
-          }
-        },
-      }
-    });
-
-    dataCourseStudent.forEach((courseStudent) => {
-      courseStudent?.user?.userDevice.forEach((userDevice) => {
-        sendNotification({
-          userId: courseStudent?.userId,
-          fcmToken: userDevice?.deviceId,
-          title: 'Task Published',
-          message: body.title,
-          categoryNotificationId: 4,
-          categoryTaskId: 3,
-          taskId: task.id,
-        });
-      });
     });
   
     return successResponse("Data created successfully", task, 200);
@@ -102,7 +70,7 @@ export async function POST(req: Request) {
     if (error instanceof Prisma.PrismaClientKnownRequestError) {
       switch (error.code) {
         case "P2025":
-          return errorResponse("Task not found", 404);
+          return errorResponse("Schedule not found", 404);
         default:
           return errorResponse(error.message, 400);
       }
@@ -128,7 +96,7 @@ export async function GET(req: Request) {
 
   try {
     const tasks = await prisma.task.findMany({
-      where: { deletedAt: null, categoryTaskId: 3 },
+      where: { deletedAt: null, categoryTaskId: 2 },
       include: {
         categoryTask: true,
         courseTeacher: {

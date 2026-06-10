@@ -57,7 +57,6 @@ const navItems: NavItem[] = [
     icon: <TableIcon />,
     subItems: [
       { name: "Users", path: "/admin/users", pro: false },
-      { name: "Role", path: "/admin/role", pro: false }
     ],
   },
   {
@@ -76,6 +75,13 @@ const navItems: NavItem[] = [
     icon: <TableIcon />,
     subItems: [
       { name: "Task", path: "/admin/task", pro: false },
+    ],
+  },
+  {
+    name: "Schedule",
+    icon: <TableIcon />,
+    subItems: [
+      { name: "Schedule", path: "/admin/schedule", pro: false },
     ],
   },
   {

@@ -1,7 +1,7 @@
 "use client";
 
 import AsyncSelect from "react-select/async";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import Label from "../form/Label";
 
 interface OptionType {
@@ -28,38 +28,56 @@ export default function SearchSelect({
 }: Props) {
   const [selected, setSelected] = useState<OptionType | null>(null);
 
-  // 🔥 Load options (search)
-  const loadOptions = async (inputValue: string) => {
-    try {
-      const res = await fetch(`${endpoint}?search=${inputValue}`);
-      const json = await res.json();
-
-      return (json.data || []).map((item: any) => ({
-        value: getValue(item),
-        label: getLabel(item),
-      }));
-    } catch (err) {
-      console.error(err);
-      return [];
-    }
-  };
-
-  // 🔥 Load default value (edit mode)
-  useEffect(() => {
-    const fetchSelected = async () => {
-      if (!value) return;
-
+  // Load option ketika search
+  const loadOptions = useCallback(
+    async (inputValue: string) => {
       try {
-        const res = await fetch(`${endpoint}/${value}`);
+        const res = await fetch(
+          `${endpoint}?search=${encodeURIComponent(inputValue)}`,
+          {
+            cache: "no-store",
+          }
+        );
+
+        const json = await res.json();
+
+        return (json.data || []).map((item: any) => ({
+          value: getValue(item),
+          label: getLabel(item),
+        }));
+      } catch (err) {
+        console.error(err);
+        return [];
+      }
+    },
+    [endpoint, getLabel, getValue]
+  );
+
+  // Load value awal (edit mode)
+  useEffect(() => {
+    if (value === null || value === undefined || value === "") {
+      setSelected(null);
+      return;
+    }
+
+    // jika sudah sama tidak perlu fetch lagi
+    if (selected?.value === value) {
+      return;
+    }
+
+    const fetchSelected = async () => {
+      try {
+        const res = await fetch(`${endpoint}/${value}`, {
+          cache: "no-store",
+        });
+
         const json = await res.json();
 
         if (json.data) {
-          const option = {
+          setSelected({
             value: getValue(json.data),
             label: getLabel(json.data),
-          };
-
-          setSelected(option);
+          });
         }
       } catch (err) {
         console.error(err);
@@ -67,21 +85,26 @@ export default function SearchSelect({
     };
 
     fetchSelected();
-  }, [value, endpoint]);
+  }, [value]);
 
   return (
     <div className="w-full">
       <Label className="text-xl">{label}</Label>
-      {/* <label className="block mb-1 text-sm font-medium">{label}</label> */}
 
-      <AsyncSelect
+      <AsyncSelect<OptionType, false>
         cacheOptions
         defaultOptions
         loadOptions={loadOptions}
         value={selected}
-        onChange={(val: any) => {
-          setSelected(val);
-          onChange(val?.value ?? null);
+        isClearable
+        placeholder={`Pilih ${label}`}
+        className="text-sm"
+        onChange={(option) => {
+          const selectedOption = option as OptionType | null;
+
+          setSelected(selectedOption);
+
+          onChange(selectedOption?.value ?? null);
         }}
         styles={{
           control: (base, state) => ({
@@ -91,7 +114,7 @@ export default function SearchSelect({
             backgroundColor: "#ffffff",
             borderColor: state.isFocused ? "#465fff" : "#d1d5db",
             boxShadow: state.isFocused
-              ? "0 0 0 3px rgba(70, 95, 255, 0.1)"
+              ? "0 0 0 3px rgba(70,95,255,.1)"
               : "none",
             "&:hover": {
               borderColor: "#465fff",
@@ -138,9 +161,6 @@ export default function SearchSelect({
             cursor: "pointer",
           }),
         }}
-        placeholder={`Pilih ${label}`}
-        isClearable
-        className="text-sm"
       />
     </div>
   );

@@ -20,15 +20,17 @@ export async function POST(req: Request, context: { params: Promise<{ id: string
     const { id } = await context.params;
     const { ids } = await req.json();
 
-    ids.forEach(async (element: number) => {
-      await prisma.teacher.delete({
-        where: {
-          id: element,
-          userId: parseInt(id),
+    await prisma.teacher.updateMany({
+      where: {
+        classId: {
+          in: ids
         },
-      });
+        userId: parseInt(id),
+      },
+      data: {
+        deletedAt: new Date(),
+      }
     });
-  
   
     return successResponse("Data created successfully", null, 200);
   } catch (error: any) {
