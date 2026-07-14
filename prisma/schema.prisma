@@ -31,6 +31,7 @@ model User {
   courseStudent     CourseStudent[]     @relation("CourseStudentUserId")
   notification      Notification[]      @relation("NotificationUserId")
   userActivation    UserActivation      @relation("UserActivationUserActivationId", fields: [userActivationId], references: [id])
+  attendances       Attendance[]        @relation("AttendanceUserId")
 
   tasksCreated      Task[] @relation("TaskCreatedById")
   tasksUpdated      Task[] @relation("TaskUpdatedById")
@@ -189,7 +190,7 @@ model Task {
   createdBy     User      @relation("TaskCreatedById", fields: [createdById], references: [id])
   updatedBy     User      @relation("TaskUpdatedById", fields: [updatedById], references: [id])
   deletedBy     User?     @relation("TaskDeletedById", fields: [deletedById], references: [id])
-  tasks         TaskScore[]               @relation("TaskTaskScoreId")
+  taskScores         TaskScore[]               @relation("TaskTaskScoreId")
 
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
@@ -324,4 +325,30 @@ model CategoryNotification {
   deletedAt   DateTime?
 
   notification   Notification[]   @relation("NotificationCategoryNotificationId")
+}
+
+model Attendance {
+
+  id          Int      @id @default(autoincrement())
+
+  userId      Int
+
+  attendanceStatusId  Int
+
+  note        String?
+
+  createdAt   DateTime @default(now())
+  updatedAt DateTime  @updatedAt
+  deletedAt   DateTime?
+
+  attendanceStatus    AttendanceStatus      @relation("AttendanceAttendanceStatusId", fields: [attendanceStatusId], references: [id])
+  user    User      @relation("AttendanceUserId", fields: [userId], references: [id])
+}
+
+model AttendanceStatus {
+  id          Int   @id @default(autoincrement())
+  name        String   @unique @db.VarChar(30)
+  deletedAt   DateTime?
+
+  attendance   Attendance[]   @relation("AttendanceAttendanceStatusId")
 }

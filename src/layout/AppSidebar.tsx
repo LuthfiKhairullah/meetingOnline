@@ -60,6 +60,13 @@ const navItems: NavItem[] = [
     ],
   },
   {
+    name: "Attendance",
+    icon: <TableIcon />,
+    subItems: [
+      { name: "Attendance", path: "/admin/attendance", pro: false },
+    ],
+  },
+  {
     name: "Class",
     icon: <TableIcon />,
     subItems: [

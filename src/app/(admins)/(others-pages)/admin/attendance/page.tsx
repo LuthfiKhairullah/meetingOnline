@@ -8,13 +8,13 @@ import Link from "next/link";
 import React from "react";
 
 export const metadata: Metadata = {
-  title: "Schedule",
+  title: "Attendance",
   description:
-    "List Schedule",
+    "List Attendance",
   // other metadata
 };
 
-export default function SchedulePage() {
+export default function AttendancePage() {
   const user = {
     role: 'admin', // contoh dari session / auth
   }
@@ -25,22 +25,18 @@ export default function SchedulePage() {
   const canDelete = permissions.includes('user:delete')
 
   const columns = [
-    { header: 'Title', accessorKey: 'title' },
-    { header: 'Description', accessorKey: 'description' },
-    { header: 'Teacher', accessorKey: 'teacher' },
-    { header: 'Class', accessorKey: 'class' },
-    { header: 'Course', accessorKey: 'course' },
-    { header: 'Start At', accessorKey: 'startAt' },
-    { header: 'End At', accessorKey: 'endAt' },
+    { header: 'User', accessorKey: 'userId' },
+    { header: 'Task', accessorKey: 'taskId' },
+    { header: 'Note', accessorKey: 'note' },
   ]
 
   return (
     <div>
-      <PageBreadcrumb pageTitle="Schedule" />
+      <PageBreadcrumb pageTitle="Attendance" />
       <div className="space-y-6">
         <ComponentCard title="">
           <Link
-              href="/admin/schedule/create"
+              href="/admin/attendance/create"
             className="px-2 py-1 bg-blue-500 text-white rounded"
           >
             Create
@@ -48,12 +44,12 @@ export default function SchedulePage() {
           <div className="space-y-6"></div>
           <DataTable
             columns={columns}
-            endpoint="/api/schedule"
+            endpoint="/api/attendance"
             canDetail={canDetail}
             canEdit={canEdit}
             canDelete={canDelete}
-            editUrl="/admin/schedule/edit"
-            detailUrl="/admin/attendance"
+            editUrl="/admin/attendance/edit"
+            detailUrl="/admin/presence"
           />
         </ComponentCard>
       </div>
